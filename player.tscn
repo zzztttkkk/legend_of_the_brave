@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cpgnd7f52n41m"]
+[gd_scene load_steps=9 format=3 uid="uid://cpgnd7f52n41m"]
 
 [ext_resource type="Texture2D" uid="uid://dma4h6nphdiq8" path="res://dist/imgs/char_1.png" id="1_yx8lb"]
 
@@ -191,9 +191,13 @@ tracks/2/keys = {
 "values": [0, 1, 2, 3, 4, 5, 6, 7]
 }
 
+[sub_resource type="Animation" id="Animation_g5n4l"]
+resource_name = "falling"
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_ghxol"]
 _data = {
 "RESET": SubResource("Animation_iwbsv"),
+"falling": SubResource("Animation_g5n4l"),
 "idle": SubResource("Animation_6nwe7"),
 "jump": SubResource("Animation_budny"),
 "running": SubResource("Animation_smjcf")
@@ -217,3 +221,5 @@ libraries = {
 position = Vector2(0, -14.5)
 scale = Vector2(1, 1.00733)
 shape = SubResource("RectangleShape2D_ffwi3")
+
+[node name="StateMachine" type="Node2D" parent="."]

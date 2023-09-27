@@ -4,4 +4,8 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <RootNamespace>LegendOfTheBrave</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="addons\" />
+    <Folder Include="scripts\classes\" />
+  </ItemGroup>
 </Project>
