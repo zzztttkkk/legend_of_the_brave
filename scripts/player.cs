@@ -13,9 +13,13 @@ public enum PlayerState {
 
 class TicksTmp : BaseTmp {
 	private readonly player _player;
+	private readonly RayCast2D _handChecker;
+	private readonly RayCast2D _footChecker;
 
-	public TicksTmp(player obj) {
+	public TicksTmp(player obj, RayCast2D hc, RayCast2D fc) {
 		_player = obj;
+		_handChecker = hc;
+		_footChecker = fc;
 	}
 
 	private bool? _isOnFloor;
@@ -71,6 +75,24 @@ class TicksTmp : BaseTmp {
 			return _isOnWall.Value;
 		}
 	}
+
+	private bool? _fullSlidingWall;
+
+	public bool IsFullSlidingWall {
+		get {
+			_fullSlidingWall ??= _footChecker.IsColliding() && _handChecker.IsColliding();
+			return _fullSlidingWall.Value;
+		}
+	}
+
+	private float? _wallNormal;
+
+	public float WallNormal {
+		get {
+			_wallNormal ??= _player.GetWallNormal().X;
+			return _wallNormal.Value;
+		}
+	}
 }
 
 public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
@@ -87,16 +109,22 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	private StateMachine<PlayerState> _stateMachine;
 	private TicksTmp _tmp;
 
-	private ulong? _landingBeginAt;
-	private bool _turnFaceInSliding;
 
+	private ulong? _landingBeginAt;
+	private ulong _LandingAnimationLength;
 
 	public override void _Ready() {
-		_tmp = new TicksTmp(this);
-		_stateMachine = new StateMachine<PlayerState>(this);
-
 		_animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
 		_graphics = GetNode<Node2D>("Graphics");
+
+		_LandingAnimationLength = (ulong)(_animationPlayer.GetAnimation("landing").Length * 1000);
+
+		_tmp = new TicksTmp(
+			this,
+			_graphics.GetNode<RayCast2D>("HandChecker"),
+			_graphics.GetNode<RayCast2D>("FootChecker")
+		);
+		_stateMachine = new StateMachine<PlayerState>(this);
 
 		OnStateChange(PlayerState.Idle, PlayerState.Idle);
 	}
@@ -167,14 +195,15 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 					return PlayerState.Landing;
 				}
 
-				if (_tmp.IsOnWall && Math.Abs(Velocity.Y) > SlideSpeed) {
+				if (_tmp.IsOnWall && _tmp.IsFullSlidingWall) {
 					return PlayerState.WallSliding;
 				}
 
 				break;
 			}
 			case PlayerState.Landing: {
-				if (_landingBeginAt == null || Time.GetTicksMsec() - _landingBeginAt.Value >= 300) {
+				if (_landingBeginAt == null ||
+				    Time.GetTicksMsec() - _landingBeginAt.Value >= _LandingAnimationLength) {
 					_landingBeginAt = null;
 					return PlayerState.Idle;
 				}
@@ -183,7 +212,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 			}
 			case PlayerState.WallSliding: {
 				if (Mathf.IsZeroApprox(Velocity.Y)) {
-					return PlayerState.Landing;
+					return PlayerState.Idle;
 				}
 
 				if (!_tmp.IsOnWall) {
@@ -231,10 +260,6 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				break;
 			}
 			case PlayerState.WallSliding: {
-				if (_turnFaceInSliding) {
-					_turnFaceInSliding = false;
-				}
-
 				_animationPlayer.Play("wall_sliding");
 				break;
 			}
@@ -269,12 +294,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				break;
 			}
 			case PlayerState.WallSliding: {
-				wallSliding(ref tmpv);
-				if (!_turnFaceInSliding) {
-					turnFace();
-					_turnFaceInSliding = true;
-				}
-
+				wallSlide(ref tmpv, delta);
 				break;
 			}
 			default: {
@@ -304,16 +324,14 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		_graphics.Scale = tmps;
 	}
 
-
-	private void turnFace() {
-		var tmps = _graphics.Scale;
-		tmps.X *= -1;
-		_graphics.Scale = tmps;
-	}
-
-	private void wallSliding(ref Vector2 tmpv) {
+	private void wallSlide(ref Vector2 tmpv, double delta) {
 		var direction = _tmp.Direction;
 		tmpv.X = direction * RunSpeed;
 		tmpv.Y = SlideSpeed;
+		tmpv.Y += (float)(G * delta / 3);
+
+		var tmps = _graphics.Scale;
+		tmps.X = _tmp.WallNormal;
+		_graphics.Scale = tmps;
 	}
 }
