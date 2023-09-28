@@ -8,6 +8,7 @@ public enum PlayerState {
 	Jump,
 	Falling,
 	Landing,
+	WallSliding,
 }
 
 class TicksTmp : BaseTmp {
@@ -53,12 +54,21 @@ class TicksTmp : BaseTmp {
 		}
 	}
 
-	private bool? _shouldJump;
+	private bool? _jumpPressed;
 
-	public bool ShouldJump {
+	public bool JumpPressed {
 		get {
-			_shouldJump ??= IsOnFloor && Input.IsActionJustPressed("jump");
-			return _shouldJump.Value;
+			_jumpPressed ??= Input.IsActionJustPressed("jump");
+			return _jumpPressed.Value;
+		}
+	}
+
+	private bool? _isOnWall;
+
+	public bool IsOnWall {
+		get {
+			_isOnWall ??= _player.IsOnWall();
+			return _isOnWall.Value;
 		}
 	}
 }
@@ -68,6 +78,8 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 	[Export] private int RunSpeed = 180;
 	[Export] private int JumpSpeed = -370;
+	[Export] private int SlideSpeed = 70;
+	[Export] private int MaxFallingSpeed = 600;
 
 	private AnimationPlayer _animationPlayer;
 	private Node2D _graphics;
@@ -76,6 +88,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	private TicksTmp _tmp;
 
 	private ulong? _landingBeginAt;
+	private bool _turnFaceInSliding;
 
 
 	public override void _Ready() {
@@ -109,7 +122,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	public PlayerState GetNextState(PlayerState current) {
 		switch (current) {
 			case PlayerState.Idle: {
-				if (_tmp.ShouldJump || Velocity.Y < 0) {
+				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
 					return PlayerState.Jump;
 				}
 
@@ -124,7 +137,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				break;
 			}
 			case PlayerState.Running: {
-				if (_tmp.ShouldJump || Velocity.Y < 0) {
+				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
 					return PlayerState.Jump;
 				}
 
@@ -154,12 +167,31 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 					return PlayerState.Landing;
 				}
 
+				if (_tmp.IsOnWall && Math.Abs(Velocity.Y) > SlideSpeed) {
+					return PlayerState.WallSliding;
+				}
+
 				break;
 			}
 			case PlayerState.Landing: {
 				if (_landingBeginAt == null || Time.GetTicksMsec() - _landingBeginAt.Value >= 300) {
 					_landingBeginAt = null;
 					return PlayerState.Idle;
+				}
+
+				break;
+			}
+			case PlayerState.WallSliding: {
+				if (Mathf.IsZeroApprox(Velocity.Y)) {
+					return PlayerState.Landing;
+				}
+
+				if (!_tmp.IsOnWall) {
+					return PlayerState.Falling;
+				}
+
+				if (_tmp.JumpPressed) {
+					return PlayerState.Jump;
 				}
 
 				break;
@@ -198,6 +230,14 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				_animationPlayer.Play("landing");
 				break;
 			}
+			case PlayerState.WallSliding: {
+				if (_turnFaceInSliding) {
+					_turnFaceInSliding = false;
+				}
+
+				_animationPlayer.Play("wall_sliding");
+				break;
+			}
 			default: {
 				throw new ArgumentOutOfRangeException(nameof(to), to, null);
 			}
@@ -205,20 +245,36 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	}
 
 	public void TickPhysics(PlayerState current, double delta) {
+		var tmpv = Velocity;
+
 		switch (current) {
 			case PlayerState.Idle: {
+				move(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.Running: {
+				move(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.Jump: {
+				move(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.Falling: {
+				move(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.Landing: {
+				move(ref tmpv, delta);
+				break;
+			}
+			case PlayerState.WallSliding: {
+				wallSliding(ref tmpv);
+				if (!_turnFaceInSliding) {
+					turnFace();
+					_turnFaceInSliding = true;
+				}
+
 				break;
 			}
 			default: {
@@ -226,21 +282,38 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 			}
 		}
 
-		move(delta);
+		Velocity = tmpv;
+		MoveAndSlide();
 	}
 
-	private void move(double delta) {
+	private void move(ref Vector2 tmpv, double delta) {
 		var direction = _tmp.Direction;
-		var tmpv = Velocity;
 		tmpv.Y += (float)(G * delta);
 		tmpv.X = direction * RunSpeed;
-		Velocity = tmpv;
-		if (!_tmp.ZeroDirection) {
-			var tmps = _graphics.Scale;
-			tmps.X = direction < 0 ? -1 : 1;
-			_graphics.Scale = tmps;
+
+		// 达到最大下降速度后，不能左右移动
+		if (tmpv.Y >= MaxFallingSpeed) {
+			tmpv.Y = MaxFallingSpeed;
+			tmpv.X = 0;
 		}
 
-		MoveAndSlide();
+		if (_tmp.ZeroDirection) return;
+
+		var tmps = _graphics.Scale;
+		tmps.X = direction < 0 ? -1 : 1;
+		_graphics.Scale = tmps;
+	}
+
+
+	private void turnFace() {
+		var tmps = _graphics.Scale;
+		tmps.X *= -1;
+		_graphics.Scale = tmps;
+	}
+
+	private void wallSliding(ref Vector2 tmpv) {
+		var direction = _tmp.Direction;
+		tmpv.X = direction * RunSpeed;
+		tmpv.Y = SlideSpeed;
 	}
 }
