@@ -30,7 +30,7 @@ project/assembly_name="Legend Of The Brave"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/com.timothyqiu.animation-resetter/plugin.cfg")
 
 [input]
 

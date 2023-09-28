@@ -1,16 +1,19 @@
 using System;
 using Godot;
+using LegendOfTheBrave.scripts.classes;
 
 public enum PlayerState {
 	Idle,
 	Running,
 	Jump,
+	Falling,
+	Landing,
 }
 
-class TicksSharedData : BaseTicksSharedData {
+class TicksTmp : BaseTmp {
 	private readonly player _player;
 
-	public TicksSharedData(player obj) {
+	public TicksTmp(player obj) {
 		_player = obj;
 	}
 
@@ -64,65 +67,98 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	private static readonly float G = (float)ProjectSettings.GetSetting("physics/2d/default_gravity");
 
 	[Export] private int RunSpeed = 180;
-	[Export] private int JumpSpeed = -380;
+	[Export] private int JumpSpeed = -370;
 
 	private AnimationPlayer _animationPlayer;
-	private Sprite2D _sprite2D;
+	private Node2D _graphics;
+
 	private StateMachine<PlayerState> _stateMachine;
-	private TicksSharedData _sharedData;
+	private TicksTmp _tmp;
+
+	private ulong? _landingBeginAt;
+
 
 	public override void _Ready() {
-		_sharedData = new TicksSharedData(this);
-		_animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
-		_sprite2D = GetNode<Sprite2D>("Sprite2D");
+		_tmp = new TicksTmp(this);
 		_stateMachine = new StateMachine<PlayerState>(this);
+
+		_animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
+		_graphics = GetNode<Node2D>("Graphics");
+
 		OnStateChange(PlayerState.Idle, PlayerState.Idle);
 	}
 
 	public override void _UnhandledInput(InputEvent @event) {
-		if (!@event.IsActionReleased("jump")) return;
+		if (@event.IsActionReleased("jump")) {
+			var tmpv = Velocity;
+			if (!(tmpv.Y < -100)) return;
+			tmpv.Y = -100;
+			Velocity = tmpv;
+		}
 
-		var tmpv = Velocity;
-		if (!(tmpv.Y < -100)) return;
-		tmpv.Y = -100;
-		Velocity = tmpv;
+		if (@event.IsActionPressed("jump") && _landingBeginAt.HasValue) {
+			_landingBeginAt = null;
+		}
 	}
 
 	public override void _PhysicsProcess(double delta) {
-		_sharedData.Clear();
+		_tmp.Clear();
 		_stateMachine._PhysicsProcess(delta);
 	}
 
 	public PlayerState GetNextState(PlayerState current) {
-		var isOnFloor = _sharedData.IsOnFloor;
-		var isStill = _sharedData.IsStill;
-		var shouldJump = _sharedData.ShouldJump;
-
 		switch (current) {
 			case PlayerState.Idle: {
-				if (!isStill) {
-					return PlayerState.Running;
+				if (_tmp.ShouldJump || Velocity.Y < 0) {
+					return PlayerState.Jump;
 				}
 
-				if (shouldJump) {
-					return PlayerState.Jump;
+				if (Velocity.Y > 0) {
+					return PlayerState.Falling;
+				}
+
+				if (!_tmp.IsStill) {
+					return PlayerState.Running;
 				}
 
 				break;
 			}
 			case PlayerState.Running: {
-				if (isStill) {
-					return PlayerState.Idle;
+				if (_tmp.ShouldJump || Velocity.Y < 0) {
+					return PlayerState.Jump;
 				}
 
-				if (shouldJump) {
-					return PlayerState.Jump;
+				if (Velocity.Y > 0) {
+					return PlayerState.Falling;
+				}
+
+				if (_tmp.IsStill) {
+					return PlayerState.Idle;
 				}
 
 				break;
 			}
 			case PlayerState.Jump: {
-				if (isOnFloor && Mathf.IsZeroApprox(Velocity.Y)) {
+				if (Velocity.Y > 50) {
+					return PlayerState.Falling;
+				}
+
+				if (_tmp.IsOnFloor && Mathf.IsZeroApprox(Velocity.Y)) {
+					return PlayerState.Idle;
+				}
+
+				break;
+			}
+			case PlayerState.Falling: {
+				if (Mathf.IsZeroApprox(Velocity.Y)) {
+					return PlayerState.Landing;
+				}
+
+				break;
+			}
+			case PlayerState.Landing: {
+				if (_landingBeginAt == null || Time.GetTicksMsec() - _landingBeginAt.Value >= 300) {
+					_landingBeginAt = null;
 					return PlayerState.Idle;
 				}
 
@@ -137,8 +173,6 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	}
 
 	public void OnStateChange(PlayerState from, PlayerState to) {
-		if (from == to && to != PlayerState.Idle) return;
-
 		switch (to) {
 			case PlayerState.Idle: {
 				_animationPlayer.Play("idle");
@@ -153,6 +187,15 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				tmpv.Y = JumpSpeed;
 				Velocity = tmpv;
 				_animationPlayer.Play("jump");
+				break;
+			}
+			case PlayerState.Falling: {
+				_animationPlayer.Play("falling");
+				break;
+			}
+			case PlayerState.Landing: {
+				_landingBeginAt ??= Time.GetTicksMsec();
+				_animationPlayer.Play("landing");
 				break;
 			}
 			default: {
@@ -172,6 +215,12 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 			case PlayerState.Jump: {
 				break;
 			}
+			case PlayerState.Falling: {
+				break;
+			}
+			case PlayerState.Landing: {
+				break;
+			}
 			default: {
 				throw new ArgumentOutOfRangeException(nameof(current), current, null);
 			}
@@ -181,13 +230,15 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	}
 
 	private void move(double delta) {
-		var direction = _sharedData.Direction;
+		var direction = _tmp.Direction;
 		var tmpv = Velocity;
 		tmpv.Y += (float)(G * delta);
 		tmpv.X = direction * RunSpeed;
 		Velocity = tmpv;
-		if (!_sharedData.ZeroDirection) {
-			_sprite2D.FlipH = direction < 0;
+		if (!_tmp.ZeroDirection) {
+			var tmps = _graphics.Scale;
+			tmps.X = direction < 0 ? -1 : 1;
+			_graphics.Scale = tmps;
 		}
 
 		MoveAndSlide();

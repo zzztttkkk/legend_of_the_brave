@@ -6,6 +6,5 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="addons\" />
-    <Folder Include="scripts\classes\" />
   </ItemGroup>
 </Project>
