@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bmqfpmjah78hx"]
+[gd_scene load_steps=11 format=3 uid="uid://bmqfpmjah78hx"]
 
 [ext_resource type="Texture2D" uid="uid://vml7sqvsbhik" path="res://dist/imgs/items/Assets/Tree-Assets.png" id="1_7vvbh"]
 [ext_resource type="Script" path="res://scripts/root.cs" id="1_o8x5b"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://b55iah53fdt4s" path="res://dist/imgs/items/Background/Background.png" id="5_drqog"]
 [ext_resource type="Texture2D" uid="uid://eeasdurxtsw2" path="res://dist/imgs/items/Trees/Background.png" id="6_i60fu"]
 [ext_resource type="Script" path="res://scripts/FPSCounter.cs" id="7_4k4un"]
+[ext_resource type="Script" path="res://scripts/ui.cs" id="8_cixrw"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_pxhwb"]
 texture = ExtResource("1_7vvbh")
@@ -857,11 +858,32 @@ region_rect = Rect2(208, 288, 128, 96)
 metadata/_edit_lock_ = true
 metadata/_edit_group_ = true
 
-[node name="ui" type="CanvasLayer" parent="uis"]
-layer = 10
+[node name="hud" type="CanvasLayer" parent="uis"]
+layer = 3
 
-[node name="FPSCounter" type="Label" parent="uis/ui"]
+[node name="FPSCounter" type="Label" parent="uis/hud"]
 offset_right = 40.0
 offset_bottom = 23.0
 theme_override_font_sizes/font_size = 8
 script = ExtResource("7_4k4un")
+
+[node name="ui" type="CanvasLayer" parent="uis"]
+process_mode = 2
+layer = 5
+visible = false
+script = ExtResource("8_cixrw")
+
+[node name="CenterContainer" type="CenterContainer" parent="uis/ui"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuButton" type="Button" parent="uis/ui/CenterContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+toggle_mode = true
+text = "Start"
+
+[connection signal="pressed" from="uis/ui/CenterContainer/MenuButton" to="uis/ui" method="_on_menu_button_pressed"]

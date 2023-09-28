@@ -9,6 +9,7 @@ public enum PlayerState {
 	Falling,
 	Landing,
 	WallSliding,
+	WallJump,
 }
 
 class TicksTmp : BaseTmp {
@@ -76,21 +77,21 @@ class TicksTmp : BaseTmp {
 		}
 	}
 
-	private bool? _fullSlidingWall;
+	private bool? _canSlidingWall;
 
-	public bool IsFullSlidingWall {
+	public bool CanSlidingWall {
 		get {
-			_fullSlidingWall ??= _footChecker.IsColliding() && _handChecker.IsColliding();
-			return _fullSlidingWall.Value;
+			_canSlidingWall ??= IsOnWall && _footChecker.IsColliding() && _handChecker.IsColliding();
+			return _canSlidingWall.Value;
 		}
 	}
 
-	private float? _wallNormal;
+	private float? _wallNormalX;
 
-	public float WallNormal {
+	public float WallNormalX {
 		get {
-			_wallNormal ??= _player.GetWallNormal().X;
-			return _wallNormal.Value;
+			_wallNormalX ??= _player.GetWallNormal().X;
+			return _wallNormalX.Value;
 		}
 	}
 }
@@ -99,9 +100,10 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	private static readonly float G = (float)ProjectSettings.GetSetting("physics/2d/default_gravity");
 
 	[Export] private int RunSpeed = 180;
-	[Export] private int JumpSpeed = -370;
+	[Export] private int JumpInitYSpeed = -370;
 	[Export] private int SlideSpeed = 70;
 	[Export] private int MaxFallingSpeed = 600;
+	[Export] private Vector2 WallJumpInitVelocity = new(240, -370);
 
 	private AnimationPlayer _animationPlayer;
 	private Node2D _graphics;
@@ -180,12 +182,14 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				break;
 			}
 			case PlayerState.Jump: {
-				if (Velocity.Y > 50) {
-					return PlayerState.Falling;
-				}
+				if (_stateMachine.FrameCount > 0) {
+					if (Velocity.Y > 50) {
+						return PlayerState.Falling;
+					}
 
-				if (_tmp.IsOnFloor && Mathf.IsZeroApprox(Velocity.Y)) {
-					return PlayerState.Idle;
+					if (_tmp.IsOnFloor && Mathf.IsZeroApprox(Velocity.Y)) {
+						return PlayerState.Idle;
+					}
 				}
 
 				break;
@@ -195,7 +199,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 					return PlayerState.Landing;
 				}
 
-				if (_tmp.IsOnWall && _tmp.IsFullSlidingWall) {
+				if (_tmp.CanSlidingWall) {
 					return PlayerState.WallSliding;
 				}
 
@@ -215,12 +219,30 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 					return PlayerState.Idle;
 				}
 
-				if (!_tmp.IsOnWall) {
+				if (_stateMachine.FrameCount > 0 && _tmp.JumpPressed) {
+					return PlayerState.WallJump;
+				}
+
+				// 即使松开方向键，也能滑墙至少20帧，给玩家爬墙跳换方向的时间。
+				if (_stateMachine.FrameCount > 20 && !_tmp.IsOnWall) {
 					return PlayerState.Falling;
 				}
 
-				if (_tmp.JumpPressed) {
-					return PlayerState.Jump;
+				break;
+			}
+			case PlayerState.WallJump: {
+				if (_stateMachine.FrameCount > 0) {
+					if (_tmp.CanSlidingWall) {
+						return PlayerState.WallSliding;
+					}
+
+					if (Velocity.Y > 50) {
+						return PlayerState.Falling;
+					}
+				}
+
+				if (_tmp.IsOnFloor && Mathf.IsZeroApprox(Velocity.Y)) {
+					return PlayerState.Idle;
 				}
 
 				break;
@@ -243,10 +265,21 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				_animationPlayer.Play("running");
 				break;
 			}
+			case PlayerState.WallJump: {
+				if (_stateMachine.FrameCount == 0) {
+					Velocity = WallJumpInitVelocity;
+				}
+
+				_animationPlayer.Play("jump");
+				break;
+			}
 			case PlayerState.Jump: {
-				var tmpv = Velocity;
-				tmpv.Y = JumpSpeed;
-				Velocity = tmpv;
+				if (_stateMachine.FrameCount == 0) {
+					var tmpv = Velocity;
+					tmpv.Y = JumpInitYSpeed;
+					Velocity = tmpv;
+				}
+
 				_animationPlayer.Play("jump");
 				break;
 			}
@@ -297,6 +330,10 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				wallSlide(ref tmpv, delta);
 				break;
 			}
+			case PlayerState.WallJump: {
+				wallJump(ref tmpv, delta);
+				break;
+			}
 			default: {
 				throw new ArgumentOutOfRangeException(nameof(current), current, null);
 			}
@@ -331,7 +368,24 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		tmpv.Y += (float)(G * delta / 3);
 
 		var tmps = _graphics.Scale;
-		tmps.X = _tmp.WallNormal;
+		tmps.X = _tmp.WallNormalX;
+		_graphics.Scale = tmps;
+	}
+
+
+	private void wallJump(ref Vector2 tmpv, double delta) {
+		if (_stateMachine.FrameCount < 8) {
+			tmpv.X *= _tmp.WallNormalX;
+		}
+		else {
+			var direction = _tmp.Direction;
+			tmpv.X = direction * RunSpeed;
+		}
+
+		tmpv.Y += (float)(G * delta);
+
+		var tmps = _graphics.Scale;
+		tmps.X = _tmp.WallNormalX;
 		_graphics.Scale = tmps;
 	}
 }
