@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using LegendOfTheBrave.scripts;
 using LegendOfTheBrave.scripts.classes;
 
 public enum PlayerState {
@@ -10,6 +11,9 @@ public enum PlayerState {
 	Landing,
 	WallSliding,
 	WallJump,
+	AttackTypeOne,
+	AttackTypeTwo,
+	AttackTypeThree
 }
 
 class TicksTmp : BaseTmp {
@@ -94,11 +98,16 @@ class TicksTmp : BaseTmp {
 			return _wallNormalX.Value;
 		}
 	}
+
+	private bool? _attackParsed;
+
+	public bool AttackParsed() {
+		_attackParsed ??= Input.IsActionJustPressed("attack");
+		return _attackParsed.Value;
+	}
 }
 
 public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
-	private static readonly float G = (float)ProjectSettings.GetSetting("physics/2d/default_gravity");
-
 	[Export] private int RunSpeed = 180;
 	[Export] private int JumpInitYSpeed = -370;
 	[Export] private int SlideSpeed = 70;
@@ -114,12 +123,18 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 	private ulong? _landingBeginAt;
 	private ulong _LandingAnimationLength;
+	private ulong _AttackType1AnimationLength;
+	private ulong _AttackType2AnimationLength;
+	private ulong _AttackType3AnimationLength;
 
 	public override void _Ready() {
 		_animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
 		_graphics = GetNode<Node2D>("Graphics");
 
 		_LandingAnimationLength = (ulong)(_animationPlayer.GetAnimation("landing").Length * 1000);
+		_AttackType1AnimationLength = (ulong)(_animationPlayer.GetAnimation("attack_type_1").Length * 1000);
+		_AttackType2AnimationLength = (ulong)(_animationPlayer.GetAnimation("attack_type_2").Length * 1000);
+		_AttackType3AnimationLength = (ulong)(_animationPlayer.GetAnimation("attack_type_3").Length * 1000);
 
 		_tmp = new TicksTmp(
 			this,
@@ -164,11 +179,19 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 					return PlayerState.Running;
 				}
 
+				if (_tmp.IsOnFloor && _tmp.AttackParsed()) {
+					return PlayerState.AttackTypeOne;
+				}
+
 				break;
 			}
 			case PlayerState.Running: {
 				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
 					return PlayerState.Jump;
+				}
+
+				if (_stateMachine.FrameCount > 0 && _tmp.IsOnFloor && _tmp.AttackParsed()) {
+					return PlayerState.AttackTypeOne;
 				}
 
 				if (Velocity.Y > 0) {
@@ -206,6 +229,10 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				break;
 			}
 			case PlayerState.Landing: {
+				if (_tmp.IsOnFloor && _tmp.AttackParsed()) {
+					return PlayerState.AttackTypeOne;
+				}
+
 				if (_landingBeginAt == null ||
 				    Time.GetTicksMsec() - _landingBeginAt.Value >= _LandingAnimationLength) {
 					_landingBeginAt = null;
@@ -242,6 +269,46 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				}
 
 				if (_tmp.IsOnFloor && Mathf.IsZeroApprox(Velocity.Y)) {
+					return PlayerState.Idle;
+				}
+
+				break;
+			}
+			case PlayerState.AttackTypeOne: {
+				if (!_tmp.ZeroDirection) {
+					return PlayerState.Running;
+				}
+
+				if (_stateMachine.FrameCount > 0) {
+					if (_stateMachine.Duration <= 200) {
+						if (_tmp.AttackParsed()) {
+							return PlayerState.AttackTypeThree;
+						}
+					}
+					else if (_stateMachine.Duration >= _AttackType1AnimationLength) {
+						return PlayerState.AttackTypeTwo;
+					}
+				}
+
+				break;
+			}
+			case PlayerState.AttackTypeTwo: {
+				if (!_tmp.ZeroDirection) {
+					return PlayerState.Running;
+				}
+
+				if (_stateMachine.Duration >= _AttackType2AnimationLength) {
+					return PlayerState.Idle;
+				}
+
+				break;
+			}
+			case PlayerState.AttackTypeThree: {
+				if (!_tmp.ZeroDirection) {
+					return PlayerState.Running;
+				}
+
+				if (_stateMachine.Duration >= _AttackType3AnimationLength) {
 					return PlayerState.Idle;
 				}
 
@@ -296,6 +363,18 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				_animationPlayer.Play("wall_sliding");
 				break;
 			}
+			case PlayerState.AttackTypeOne: {
+				_animationPlayer.Play("attack_type_1");
+				break;
+			}
+			case PlayerState.AttackTypeTwo: {
+				_animationPlayer.Play("attack_type_2");
+				break;
+			}
+			case PlayerState.AttackTypeThree: {
+				_animationPlayer.Play("attack_type_3");
+				break;
+			}
 			default: {
 				throw new ArgumentOutOfRangeException(nameof(to), to, null);
 			}
@@ -334,6 +413,12 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				wallJump(ref tmpv, delta);
 				break;
 			}
+			case PlayerState.AttackTypeOne:
+			case PlayerState.AttackTypeTwo:
+			case PlayerState.AttackTypeThree: {
+				move(ref tmpv, delta);
+				break;
+			}
 			default: {
 				throw new ArgumentOutOfRangeException(nameof(current), current, null);
 			}
@@ -345,7 +430,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 	private void move(ref Vector2 tmpv, double delta) {
 		var direction = _tmp.Direction;
-		tmpv.Y += (float)(G * delta);
+		tmpv.Y += (float)(Globals.Gravity * delta);
 		tmpv.X = direction * RunSpeed;
 
 		// 达到最大下降速度后，不能左右移动
@@ -365,7 +450,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		var direction = _tmp.Direction;
 		tmpv.X = direction * RunSpeed;
 		tmpv.Y = SlideSpeed;
-		tmpv.Y += (float)(G * delta / 3);
+		tmpv.Y += (float)(Globals.Gravity * delta / 3);
 
 		var tmps = _graphics.Scale;
 		tmps.X = _tmp.WallNormalX;
@@ -382,7 +467,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 			tmpv.X = direction * RunSpeed;
 		}
 
-		tmpv.Y += (float)(G * delta);
+		tmpv.Y += (float)(Globals.Gravity * delta);
 
 		var tmps = _graphics.Scale;
 		tmps.X = _tmp.WallNormalX;

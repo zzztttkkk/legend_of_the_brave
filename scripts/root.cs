@@ -22,7 +22,7 @@ public partial class root : Node2D {
 
 	public override void _UnhandledInput(InputEvent @event) {
 		if (@event.IsActionReleased("paused")) {
-			if (@event.GetMeta(Names.PausedEventHandledMetaKey, @default: false).AsBool()) {
+			if (@event.GetMeta(Globals.PausedEventHandledMetaKey, @default: false).AsBool()) {
 				return;
 			}
 
