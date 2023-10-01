@@ -14,7 +14,9 @@ public class StateMachine<T> where T : Enum {
 	private ulong _frameCount;
 	private ulong _duration;
 
-	private T current {
+	public T current {
+		get => _current;
+
 		set {
 			if (!Equals(_current, value)) {
 				_frameCount = 0;

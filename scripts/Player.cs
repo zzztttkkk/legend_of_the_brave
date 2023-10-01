@@ -131,10 +131,6 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 
 	private ulong? _landingBeginAt;
-	private ulong _LandingAnimationLength;
-	private ulong _AttackType1AnimationLength;
-	private ulong _AttackType2AnimationLength;
-	private ulong _AttackType3AnimationLength;
 	private bool _isComboRequested;
 
 	public override void _Ready() {
@@ -142,11 +138,6 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		_graphics = GetNode<Node2D>("Graphics");
 		_hurtBox = _graphics.GetNode<HurtBox>("HurtBox");
 		_hurtBox.Hurt += OnHurt;
-
-		_LandingAnimationLength = (ulong)(_animationPlayer.GetAnimation("landing").Length * 1000);
-		_AttackType1AnimationLength = (ulong)(_animationPlayer.GetAnimation("attack_type_1").Length * 1000);
-		_AttackType2AnimationLength = (ulong)(_animationPlayer.GetAnimation("attack_type_2").Length * 1000);
-		_AttackType3AnimationLength = (ulong)(_animationPlayer.GetAnimation("attack_type_3").Length * 1000);
 
 		_tmp = new TicksTmp(
 			this,
@@ -159,10 +150,9 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	}
 
 	public override void _UnhandledInput(InputEvent @event) {
-		if (@event.IsActionReleased("jump")) {
+		if (_stateMachine.current == PlayerState.Jump && @event.IsActionReleased("jump")) {
 			var tmpv = Velocity;
-			if (!(tmpv.Y < -100)) return;
-			tmpv.Y = -100;
+			tmpv.Y = 0;
 			Velocity = tmpv;
 		}
 
@@ -256,8 +246,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 					return PlayerState.AttackTypeOne;
 				}
 
-				if (_landingBeginAt == null ||
-				    Time.GetTicksMsec() - _landingBeginAt.Value >= _LandingAnimationLength) {
+				if (_landingBeginAt == null || !_animationPlayer.IsPlaying()) {
 					_landingBeginAt = null;
 					return PlayerState.Idle;
 				}
