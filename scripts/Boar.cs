@@ -28,7 +28,7 @@ class BoarTmp : BaseTmp {
 	public bool SeePlayer {
 		get {
 			_seePlayer ??= _playerFaceChecker.IsColliding() &&
-			               _playerFaceChecker.GetCollider().GetType() == typeof(player);
+			               _playerFaceChecker.GetCollider().GetType() == typeof(Player);
 			return _seePlayer.Value;
 		}
 	}
@@ -73,12 +73,13 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 
 	public override void _Ready() {
 		base._Ready();
+
 		_stateMachine = new StateMachine<BoarState>(this);
 		_tmp = new BoarTmp(
-			GetNode<RayCast2D>("Graphics/WallChecker"),
-			GetNode<RayCast2D>("Graphics/FloorChecker1"),
-			GetNode<RayCast2D>("Graphics/FloorChecker2"),
-			GetNode<RayCast2D>("Graphics/PlayerChecker")
+			_graphics.GetNode<RayCast2D>("WallChecker"),
+			_graphics.GetNode<RayCast2D>("FloorChecker1"),
+			_graphics.GetNode<RayCast2D>("FloorChecker2"),
+			_graphics.GetNode<RayCast2D>("PlayerChecker")
 		);
 
 		OnStateChange(BoarState.Idle, BoarState.Idle);
@@ -89,9 +90,13 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 		_stateMachine._PhysicsProcess(delta);
 	}
 
+	protected override void OnHurt(HitBox from) {
+		GD.Print($"Boar.OnHurt: {from.Owner.Name}");
+	}
 
 	public BoarState GetNextState(BoarState current) {
 		if (_tmp.SeePlayer) {
+			_losePlayerAt = 0;
 			return BoarState.Run;
 		}
 

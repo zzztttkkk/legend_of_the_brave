@@ -31,7 +31,7 @@ project/assembly_name="Legend Of The Brave"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/addnodes/plugin.cfg")
 
 [input]
 
@@ -79,6 +79,8 @@ attack={
 2d_physics/layer_1="Enviroment"
 2d_physics/layer_2="Player"
 2d_physics/layer_3="Enemy"
+2d_physics/layer_4="PlayerHurtBox"
+2d_physics/layer_5="EnemyHurtBox"
 
 [physics]
 

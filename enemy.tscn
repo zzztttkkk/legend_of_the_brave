@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://dop0mexa1cym8"]
+[gd_scene load_steps=4 format=3 uid="uid://dop0mexa1cym8"]
 
 [ext_resource type="Script" path="res://scripts/classes/Enemy.cs" id="1_7vfj2"]
+[ext_resource type="Script" path="res://scripts/classes/HitBox.cs" id="2_u7ejb"]
+[ext_resource type="Script" path="res://scripts/classes/HurtBox.cs" id="3_lphcq"]
 
 [node name="Enemy" type="CharacterBody2D"]
 collision_layer = 4
@@ -9,6 +11,16 @@ script = ExtResource("1_7vfj2")
 [node name="Graphics" type="Node2D" parent="."]
 
 [node name="Sprite2D" type="Sprite2D" parent="Graphics"]
+
+[node name="HitBox" type="Area2D" parent="Graphics"]
+collision_layer = 0
+collision_mask = 8
+script = ExtResource("2_u7ejb")
+
+[node name="HurtBox" type="Area2D" parent="Graphics"]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("3_lphcq")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 

@@ -18,11 +18,11 @@ public enum PlayerState {
 }
 
 class TicksTmp : BaseTmp {
-	private readonly player _player;
+	private readonly Player _player;
 	private readonly RayCast2D _handChecker;
 	private readonly RayCast2D _footChecker;
 
-	public TicksTmp(player obj, RayCast2D hc, RayCast2D fc) {
+	public TicksTmp(Player obj, RayCast2D hc, RayCast2D fc) {
 		_player = obj;
 		_handChecker = hc;
 		_footChecker = fc;
@@ -108,7 +108,7 @@ class TicksTmp : BaseTmp {
 	}
 }
 
-public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
+public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	private static readonly List<PlayerState> OnFloorStates = new() {
 		PlayerState.Idle, PlayerState.Running,
 		PlayerState.Landing, PlayerState.AttackTypeOne,
@@ -124,6 +124,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 	private AnimationPlayer _animationPlayer;
 	private Node2D _graphics;
+	private HurtBox _hurtBox;
 
 	private StateMachine<PlayerState> _stateMachine;
 	private TicksTmp _tmp;
@@ -139,6 +140,8 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	public override void _Ready() {
 		_animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
 		_graphics = GetNode<Node2D>("Graphics");
+		_hurtBox = _graphics.GetNode<HurtBox>("HurtBox");
+		_hurtBox.Hurt += OnHurt;
 
 		_LandingAnimationLength = (ulong)(_animationPlayer.GetAnimation("landing").Length * 1000);
 		_AttackType1AnimationLength = (ulong)(_animationPlayer.GetAnimation("attack_type_1").Length * 1000);
@@ -175,6 +178,10 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	public override void _PhysicsProcess(double delta) {
 		_tmp.Clear();
 		_stateMachine._PhysicsProcess(delta);
+	}
+
+	private void OnHurt(HitBox from) {
+		GD.Print($"Player.OnHurt: {from.Owner.Name}");
 	}
 
 	public PlayerState GetNextState(PlayerState current) {
@@ -468,7 +475,6 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		tmps.X = _tmp.WallNormalX;
 		_graphics.Scale = tmps;
 	}
-
 
 	private void wallJump(ref Vector2 tmpv, double delta) {
 		if (_stateMachine.FrameCount < 8) {

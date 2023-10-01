@@ -1,4 +1,5 @@
 using Godot;
+using LegendOfTheBrave.scripts.classes;
 
 public enum FaceDirection {
 	Left = -1,
@@ -11,6 +12,7 @@ public partial class Enemy : CharacterBody2D {
 
 	protected Node2D _graphics;
 	protected AnimationPlayer _animationPlayer;
+	protected HurtBox _hurtBox;
 
 	public FaceDirection FaceDirection {
 		get => _faceDirection;
@@ -40,5 +42,10 @@ public partial class Enemy : CharacterBody2D {
 	public override void _Ready() {
 		_graphics = GetNode<Node2D>("Graphics");
 		_animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
+		_hurtBox = _graphics.GetNode<HurtBox>("HurtBox");
+		_hurtBox.Hurt += OnHurt;
+	}
+
+	protected virtual void OnHurt(HitBox from) {
 	}
 }

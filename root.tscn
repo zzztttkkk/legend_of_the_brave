@@ -888,6 +888,5 @@ text = "Start"
 [node name="Boar" parent="." instance=ExtResource("9_ct6lx")]
 position = Vector2(-1584, 1401)
 _cooldown = 5000
-_speed = 240
 
 [connection signal="pressed" from="uis/ui/CenterContainer/MenuButton" to="uis/ui" method="_on_menu_button_pressed"]
