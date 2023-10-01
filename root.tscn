@@ -1,9 +1,8 @@
-[gd_scene load_steps=12 format=3 uid="uid://bmqfpmjah78hx"]
+[gd_scene load_steps=11 format=3 uid="uid://bmqfpmjah78hx"]
 
 [ext_resource type="Texture2D" uid="uid://vml7sqvsbhik" path="res://dist/imgs/items/Assets/Tree-Assets.png" id="1_7vvbh"]
 [ext_resource type="Script" path="res://scripts/root.cs" id="1_o8x5b"]
 [ext_resource type="PackedScene" uid="uid://cpgnd7f52n41m" path="res://player.tscn" id="2_81ydp"]
-[ext_resource type="Script" path="res://scripts/player.cs" id="3_spgmt"]
 [ext_resource type="Texture2D" uid="uid://b55iah53fdt4s" path="res://dist/imgs/items/Background/Background.png" id="5_drqog"]
 [ext_resource type="Texture2D" uid="uid://eeasdurxtsw2" path="res://dist/imgs/items/Trees/Background.png" id="6_i60fu"]
 [ext_resource type="Script" path="res://scripts/FPSCounter.cs" id="7_4k4un"]
@@ -382,7 +381,6 @@ layer_1/tile_data = PackedInt32Array(-393303, 589824, 2, -393275, 458752, 3, 262
 
 [node name="Player" parent="." instance=ExtResource("2_81ydp")]
 position = Vector2(-1378, 1332)
-script = ExtResource("3_spgmt")
 
 [node name="Camera2D" type="Camera2D" parent="Player"]
 drag_horizontal_enabled = true

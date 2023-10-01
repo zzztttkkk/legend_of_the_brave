@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 using LegendOfTheBrave.scripts;
 using LegendOfTheBrave.scripts.classes;
@@ -108,11 +109,18 @@ class TicksTmp : BaseTmp {
 }
 
 public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
+	private static readonly List<PlayerState> OnFloorStates = new() {
+		PlayerState.Idle, PlayerState.Running,
+		PlayerState.Landing, PlayerState.AttackTypeOne,
+		PlayerState.AttackTypeTwo, PlayerState.AttackTypeThree
+	};
+
 	[Export] private int RunSpeed = 180;
 	[Export] private int JumpInitYSpeed = -370;
 	[Export] private int SlideSpeed = 70;
 	[Export] private int MaxFallingSpeed = 600;
 	[Export] private Vector2 WallJumpInitVelocity = new(240, -370);
+	[Export] private bool CanCombo;
 
 	private AnimationPlayer _animationPlayer;
 	private Node2D _graphics;
@@ -126,6 +134,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	private ulong _AttackType1AnimationLength;
 	private ulong _AttackType2AnimationLength;
 	private ulong _AttackType3AnimationLength;
+	private bool _isComboRequested;
 
 	public override void _Ready() {
 		_animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
@@ -157,6 +166,10 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		if (@event.IsActionPressed("jump") && _landingBeginAt.HasValue) {
 			_landingBeginAt = null;
 		}
+
+		if (@event.IsActionPressed("attack") && CanCombo) {
+			_isComboRequested = true;
+		}
 	}
 
 	public override void _PhysicsProcess(double delta) {
@@ -165,14 +178,21 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	}
 
 	public PlayerState GetNextState(PlayerState current) {
+		if (!Mathf.IsZeroApprox(Velocity.Y) && OnFloorStates.Contains(current) && !_tmp.IsOnFloor) {
+			if (Velocity.Y > 0) {
+				return PlayerState.Falling;
+			}
+
+			if (Velocity.Y < 0) {
+				return PlayerState.Jump;
+			}
+		}
+
+
 		switch (current) {
 			case PlayerState.Idle: {
 				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
 					return PlayerState.Jump;
-				}
-
-				if (Velocity.Y > 0) {
-					return PlayerState.Falling;
 				}
 
 				if (!_tmp.IsStill) {
@@ -192,10 +212,6 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 				if (_stateMachine.FrameCount > 0 && _tmp.IsOnFloor && _tmp.AttackParsed()) {
 					return PlayerState.AttackTypeOne;
-				}
-
-				if (Velocity.Y > 0) {
-					return PlayerState.Falling;
 				}
 
 				if (_tmp.IsStill) {
@@ -279,15 +295,8 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 					return PlayerState.Running;
 				}
 
-				if (_stateMachine.FrameCount > 0) {
-					if (_stateMachine.Duration <= 200) {
-						if (_tmp.AttackParsed()) {
-							return PlayerState.AttackTypeThree;
-						}
-					}
-					else if (_stateMachine.Duration >= _AttackType1AnimationLength) {
-						return PlayerState.AttackTypeTwo;
-					}
+				if (!_animationPlayer.IsPlaying()) {
+					return _isComboRequested ? PlayerState.AttackTypeTwo : PlayerState.Idle;
 				}
 
 				break;
@@ -297,8 +306,8 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 					return PlayerState.Running;
 				}
 
-				if (_stateMachine.Duration >= _AttackType2AnimationLength) {
-					return PlayerState.Idle;
+				if (!_animationPlayer.IsPlaying()) {
+					return _isComboRequested ? PlayerState.AttackTypeThree : PlayerState.Idle;
 				}
 
 				break;
@@ -308,7 +317,7 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 					return PlayerState.Running;
 				}
 
-				if (_stateMachine.Duration >= _AttackType3AnimationLength) {
+				if (!_animationPlayer.IsPlaying()) {
 					return PlayerState.Idle;
 				}
 
@@ -364,14 +373,17 @@ public partial class player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				break;
 			}
 			case PlayerState.AttackTypeOne: {
+				_isComboRequested = false;
 				_animationPlayer.Play("attack_type_1");
 				break;
 			}
 			case PlayerState.AttackTypeTwo: {
+				_isComboRequested = false;
 				_animationPlayer.Play("attack_type_2");
 				break;
 			}
 			case PlayerState.AttackTypeThree: {
+				_isComboRequested = false;
 				_animationPlayer.Play("attack_type_3");
 				break;
 			}
