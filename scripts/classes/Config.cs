@@ -62,4 +62,39 @@ public class Config {
 
 		return new Vector2I(x, y);
 	}
+
+	public Vector2? GetVector2(string path, string sep = "*") {
+		var tmp = GetString(path);
+		if (string.IsNullOrEmpty(tmp)) {
+			return null;
+		}
+
+		var parts = tmp.Split(sep);
+		if (parts.Length < 2) {
+			return null;
+		}
+
+		if (!float.TryParse(parts[0], out var x)) {
+			return null;
+		}
+
+		if (!float.TryParse(parts[1], out var y)) {
+			return null;
+		}
+
+		return new Vector2(x, y);
+	}
+
+	public bool? GetBool(string path) {
+		var tmp = GetString(path);
+		if (string.IsNullOrEmpty(tmp)) {
+			return null;
+		}
+
+		if (!bool.TryParse(tmp, out var val)) {
+			return val;
+		}
+
+		return null;
+	}
 }

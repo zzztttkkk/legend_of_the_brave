@@ -1,21 +1,18 @@
 using Godot;
 using LegendOfTheBrave.scripts;
-using LegendOfTheBrave.scripts.classes;
 
 public partial class Root : Node2D {
 	private TileMap _tileMap;
 	private Camera2D _camera2D;
 	private CanvasLayer _ui;
 
-	private readonly Config _config = new();
-
 	private void _CustomWindows() {
-		var cwsize = _config.GetVector2I("dev.window_size");
+		var cwsize = Globals.Config.GetVector2I("dev.window_size");
 		if (cwsize.HasValue) {
 			GetWindow().Size = cwsize.Value;
 		}
 
-		var cwpos = _config.GetVector2I("dev.window_pos");
+		var cwpos = Globals.Config.GetVector2I("dev.window_pos");
 		if (cwpos.HasValue) {
 			GetWindow().Position = cwpos.Value;
 		}
