@@ -62,6 +62,16 @@ class BoarTmp : BaseTmp {
 	}
 }
 
+class DamageEvent {
+	public int Damage;
+	public bool Processed;
+
+	public DamageEvent(int f) {
+		Damage = f;
+		Processed = false;
+	}
+}
+
 public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 	[Export] private int _walkSpeed = 60;
 	[Export] private ulong _cooldown = 2500;
@@ -70,11 +80,12 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 	private BoarTmp _tmp;
 
 	private ulong _losePlayerAt;
+	private DamageEvent _damageEvent;
 
 	public override void _Ready() {
 		base._Ready();
 
-		_stateMachine = new StateMachine<BoarState>(this);
+		_stateMachine = new StateMachine<BoarState>(this, true);
 		_tmp = new BoarTmp(
 			_graphics.GetNode<RayCast2D>("WallChecker"),
 			_graphics.GetNode<RayCast2D>("FloorChecker1"),
@@ -91,11 +102,22 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 	}
 
 	protected override void OnHurt(HitBox from) {
-		GD.Print($"Boar.OnHurt: {from.Owner.Name}");
+		if (_damageEvent != null) return;
+
+		if (from.Owner.GetType() == typeof(Player)) {
+			var player = (Player)from.Owner;
+			if (player.CurrentDamage < 1) return;
+			_damageEvent = new DamageEvent(player.CurrentDamage);
+		}
 	}
 
 	public BoarState GetNextState(BoarState current) {
-		if (_tmp.SeePlayer) {
+		if (_damageEvent is { Processed: false }) {
+			_damageEvent.Processed = true;
+			return BoarState.OnHit;
+		}
+
+		if (current != BoarState.OnHit && _tmp.SeePlayer) {
 			_losePlayerAt = 0;
 			return BoarState.Run;
 		}
@@ -139,6 +161,11 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 				break;
 			}
 			case BoarState.OnHit: {
+				if (_stateMachine.FrameCount > 0 && !_animationPlayer.IsPlaying()) {
+					_damageEvent = null;
+					return BoarState.Idle;
+				}
+
 				break;
 			}
 			default: {
@@ -165,6 +192,7 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 			}
 			case BoarState.OnHit: {
 				_animationPlayer.Play("on_hit");
+				_hp -= _damageEvent.Damage;
 				break;
 			}
 			default: {
@@ -190,7 +218,7 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 				break;
 			}
 			case BoarState.OnHit: {
-				move(ref tmpv, delta, 0);
+				onHit(ref tmpv, delta, _walkSpeed);
 				break;
 			}
 			default: {
@@ -204,6 +232,11 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 
 	private void move(ref Vector2 tmpv, double delta, int speed) {
 		tmpv.X = speed * (int)_faceDirection;
+		tmpv.Y += (float)(Globals.Gravity * delta);
+	}
+
+	private void onHit(ref Vector2 tmpv, double delta, int speed) {
+		tmpv.X = speed * (int)_faceDirection * -1;
 		tmpv.Y += (float)(Globals.Gravity * delta);
 	}
 }

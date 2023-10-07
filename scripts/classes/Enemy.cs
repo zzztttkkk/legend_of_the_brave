@@ -9,6 +9,7 @@ public enum FaceDirection {
 public partial class Enemy : CharacterBody2D {
 	[Export] protected FaceDirection _faceDirection = FaceDirection.Left;
 	[Export] protected int _speed = 200;
+	[Export] protected int _hp = 1000;
 
 	protected Node2D _graphics;
 	protected AnimationPlayer _animationPlayer;

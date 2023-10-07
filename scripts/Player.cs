@@ -119,8 +119,9 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	[Export] private int JumpInitYSpeed = -370;
 	[Export] private int SlideSpeed = 70;
 	[Export] private int MaxFallingSpeed = 600;
-	[Export] private Vector2 WallJumpInitVelocity = new(240, -370);
+	[Export] private Vector2 WallJumpInitVelocity = new(200, -370);
 	[Export] private bool CanCombo;
+	[Export] private int Damage;
 
 	private AnimationPlayer _animationPlayer;
 	private Node2D _graphics;
@@ -132,6 +133,8 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 	private ulong? _landingBeginAt;
 	private bool _isComboRequested;
+
+	public int CurrentDamage => Damage;
 
 	public override void _Ready() {
 		_animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
