@@ -12,7 +12,7 @@ public class BaseTmp {
 		var type = GetType();
 		var ok = InfosMap.TryGetValue(type, out var lst);
 		if (!ok) {
-			var tmp = GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
+			var tmp = type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
 				.Where(field => field.FieldType.IsGenericType)
 				.Where(field => field.FieldType.GetGenericTypeDefinition() == typeof(Nullable<>)).ToList();
 			InfosMap[type] = tmp;
