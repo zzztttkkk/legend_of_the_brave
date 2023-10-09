@@ -126,6 +126,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	private AnimationPlayer _animationPlayer;
 	private Node2D _graphics;
 	private HurtBox _hurtBox;
+	private Camera2D _camera2D;
 
 	private StateMachine<PlayerState> _stateMachine;
 	private TicksTmp _tmp;
@@ -141,6 +142,18 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		_graphics = GetNode<Node2D>("Graphics");
 		_hurtBox = _graphics.GetNode<HurtBox>("HurtBox");
 		_hurtBox.Hurt += OnHurt;
+		_camera2D = GetNode<Camera2D>("Camera2D");
+
+		var tileMap = GetTree().Root.GetNode<TileMap>("Root/TileMap");
+		if (tileMap != null) {
+			var rect = tileMap.GetUsedRect().Grow(-1);
+			var size = tileMap.TileSet.TileSize;
+
+			_camera2D.LimitTop = rect.Position.Y * size.Y;
+			_camera2D.LimitBottom = rect.End.Y * size.Y;
+			_camera2D.LimitLeft = rect.Position.X * size.X;
+			_camera2D.LimitRight = rect.End.X * size.Y;
+		}
 
 		_tmp = new TicksTmp(
 			this,

@@ -1,0 +1,36 @@
+[gd_scene load_steps=3 format=3 uid="uid://dhv5i2khficpo"]
+
+[ext_resource type="Script" path="res://scripts/FPSCounter.cs" id="1_wdjpe"]
+[ext_resource type="Script" path="res://scripts/ui.cs" id="2_6708o"]
+
+[node name="uis" type="Node2D"]
+
+[node name="hud" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="FPSCounter" type="Label" parent="hud"]
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_font_sizes/font_size = 8
+script = ExtResource("1_wdjpe")
+
+[node name="ui" type="CanvasLayer" parent="."]
+process_mode = 2
+layer = 5
+visible = false
+script = ExtResource("2_6708o")
+
+[node name="CenterContainer" type="CenterContainer" parent="ui"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuButton" type="Button" parent="ui/CenterContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+toggle_mode = true
+text = "Start"
+
+[connection signal="pressed" from="ui/CenterContainer/MenuButton" to="ui" method="_on_menu_button_pressed"]

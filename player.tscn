@@ -1637,6 +1637,10 @@ size = Vector2(16, 31)
 collision_layer = 2
 script = ExtResource("1_hib05")
 
+[node name="Camera2D" type="Camera2D" parent="."]
+drag_horizontal_enabled = true
+drag_vertical_enabled = true
+
 [node name="Graphics" type="Node2D" parent="."]
 
 [node name="Sprite2D" type="Sprite2D" parent="Graphics"]
