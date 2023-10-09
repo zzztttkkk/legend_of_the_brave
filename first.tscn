@@ -1,11 +1,11 @@
-[gd_scene load_steps=10 format=3 uid="uid://bmqfpmjah78hx"]
+[gd_scene load_steps=10 format=3 uid="uid://d1eue7yt6sak2"]
 
 [ext_resource type="Texture2D" uid="uid://vml7sqvsbhik" path="res://dist/imgs/items/Assets/Tree-Assets.png" id="1_7vvbh"]
 [ext_resource type="Script" path="res://scripts/Root.cs" id="1_q7nbs"]
 [ext_resource type="PackedScene" uid="uid://cpgnd7f52n41m" path="res://player.tscn" id="2_81ydp"]
 [ext_resource type="Texture2D" uid="uid://b55iah53fdt4s" path="res://dist/imgs/items/Background/Background.png" id="5_drqog"]
 [ext_resource type="Texture2D" uid="uid://eeasdurxtsw2" path="res://dist/imgs/items/Trees/Background.png" id="6_i60fu"]
-[ext_resource type="PackedScene" uid="uid://dhv5i2khficpo" path="res://uis.tscn" id="6_p7gae"]
+[ext_resource type="PackedScene" path="res://uis.tscn" id="6_p7gae"]
 [ext_resource type="PackedScene" uid="uid://bg7g0vaxk7jih" path="res://boar.tscn" id="9_ct6lx"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_pxhwb"]

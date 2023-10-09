@@ -91,15 +91,6 @@ class TicksTmp : BaseTmp {
 		}
 	}
 
-	private float? _wallNormalX;
-
-	public float WallNormalX {
-		get {
-			_wallNormalX ??= _player.GetWallNormal().X;
-			return _wallNormalX.Value;
-		}
-	}
-
 	private bool? _attackParsed;
 
 	public bool AttackParsed() {
@@ -133,6 +124,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 	private ulong? _landingBeginAt;
 	private bool _isComboRequested;
+	private float _lastWallNormalX;
 
 	public int CurrentDamage => Damage;
 
@@ -165,7 +157,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 			_graphics.GetNode<RayCast2D>("HandChecker"),
 			_graphics.GetNode<RayCast2D>("FootChecker")
 		);
-		_stateMachine = new StateMachine<PlayerState>(this);
+		_stateMachine = new StateMachine<PlayerState>(this, true);
 
 		OnStateChange(PlayerState.Idle, PlayerState.Idle);
 	}
@@ -197,11 +189,11 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 	public PlayerState GetNextState(PlayerState current) {
 		if (!Mathf.IsZeroApprox(Velocity.Y) && OnFloorStates.Contains(current) && !_tmp.IsOnFloor) {
-			if (Velocity.Y > 0) {
+			if (Velocity.Y >= 100) {
 				return PlayerState.Falling;
 			}
 
-			if (Velocity.Y < 0) {
+			if (Velocity.Y < -50) {
 				return PlayerState.Jump;
 			}
 		}
@@ -279,6 +271,10 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 					return PlayerState.Idle;
 				}
 
+				if (_stateMachine.FrameCount == 0) {
+					_lastWallNormalX = GetWallNormal().X;
+				}
+
 				if (_stateMachine.FrameCount > 0 && _tmp.JumpPressed) {
 					return PlayerState.WallJump;
 				}
@@ -292,13 +288,12 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 			}
 			case PlayerState.WallJump: {
 				if (_stateMachine.FrameCount > 0) {
-					if (_tmp.CanSlidingWall) {
-						return PlayerState.WallSliding;
-					}
-
 					if (Velocity.Y > 50) {
 						return PlayerState.Falling;
 					}
+				}
+				else {
+					_lastWallNormalX = GetWallNormal().X;
 				}
 
 				if (_tmp.IsOnFloor && Mathf.IsZeroApprox(Velocity.Y)) {
@@ -482,23 +477,24 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		tmpv.Y += (float)(Globals.Gravity * delta / 3);
 
 		var tmps = _graphics.Scale;
-		tmps.X = _tmp.WallNormalX;
+		tmps.X = _lastWallNormalX;
 		_graphics.Scale = tmps;
 	}
 
 	private void wallJump(ref Vector2 tmpv, double delta) {
-		if (_stateMachine.FrameCount < 8) {
-			tmpv.X *= _tmp.WallNormalX;
+		var tmps = _graphics.Scale;
+
+		if (_stateMachine.Duration < 80) {
+			tmpv.X *= _lastWallNormalX;
+			tmps.X = _lastWallNormalX;
 		}
 		else {
 			var direction = _tmp.Direction;
 			tmpv.X = direction * RunSpeed;
+			tmps.X = direction < 0 ? -1 : 1;
 		}
 
 		tmpv.Y += (float)(Globals.Gravity * delta);
-
-		var tmps = _graphics.Scale;
-		tmps.X = _tmp.WallNormalX;
 		_graphics.Scale = tmps;
 	}
 }

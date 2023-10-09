@@ -63,7 +63,7 @@ class BoarTmp : BaseTmp {
 }
 
 class DamageEvent {
-	public int Damage;
+	public readonly int Damage;
 	public bool Processed;
 
 	public DamageEvent(int f) {
@@ -163,7 +163,8 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 			case BoarState.OnHit: {
 				if (_stateMachine.FrameCount > 0 && !_animationPlayer.IsPlaying()) {
 					_damageEvent = null;
-					return BoarState.Idle;
+					_losePlayerAt = 0;
+					return BoarState.Run;
 				}
 
 				break;
