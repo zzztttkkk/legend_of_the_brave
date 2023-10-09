@@ -18,11 +18,13 @@ public partial class Root : Node2D {
 
 	public override void _Ready() {
 		_CustomWindows();
-		_ui = GetNode<CanvasLayer>("uis/ui");
+		_ui = GetNodeOrNull<CanvasLayer>("uis/ui");
 	}
 
 	public override void _UnhandledInput(InputEvent @event) {
 		if (@event.IsActionReleased("paused")) {
+			if (_ui == null) return;
+
 			if (@event.GetMeta(Globals.PausedEventHandledMetaKey, @default: false).AsBool()) {
 				return;
 			}
