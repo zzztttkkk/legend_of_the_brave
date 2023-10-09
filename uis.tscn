@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://dhv5i2khficpo"]
+[gd_scene load_steps=3 format=3 uid="uid://bgryp077b4pyc"]
 
 [ext_resource type="Script" path="res://scripts/FPSCounter.cs" id="1_wdjpe"]
-[ext_resource type="Script" path="res://scripts/ui.cs" id="2_6708o"]
+[ext_resource type="Script" path="res://scripts/UI.cs" id="2_mfnut"]
 
 [node name="uis" type="Node2D"]
 
@@ -18,7 +18,7 @@ script = ExtResource("1_wdjpe")
 process_mode = 2
 layer = 5
 visible = false
-script = ExtResource("2_6708o")
+script = ExtResource("2_mfnut")
 
 [node name="CenterContainer" type="CenterContainer" parent="ui"]
 anchors_preset = 15
@@ -31,6 +31,7 @@ grow_vertical = 2
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 toggle_mode = true
+keep_pressed_outside = true
 text = "Start"
 
 [connection signal="pressed" from="ui/CenterContainer/MenuButton" to="ui" method="_on_menu_button_pressed"]

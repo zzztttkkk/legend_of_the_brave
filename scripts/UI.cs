@@ -1,7 +1,7 @@
 using Godot;
 using LegendOfTheBrave.scripts;
 
-public partial class ui : CanvasLayer {
+public partial class UI : CanvasLayer {
 	public override void _UnhandledInput(InputEvent @event) {
 		if (@event.IsActionReleased("paused")) {
 			_on_menu_button_pressed();
