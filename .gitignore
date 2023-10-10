@@ -2,3 +2,4 @@
 .godot/
 build/
 config.local.ini
+*.sln.DotSettings.user

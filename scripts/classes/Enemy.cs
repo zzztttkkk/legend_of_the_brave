@@ -22,15 +22,15 @@ public partial class Enemy : CharacterBody2D {
 			_faceDirection = value;
 
 			if (_graphics == null) {
-				Ready += turnFaceByValue;
+				Ready += _TurnFaceByValue;
 			}
 			else {
-				turnFaceByValue();
+				_TurnFaceByValue();
 			}
 		}
 	}
 
-	private void turnFaceByValue() {
+	private void _TurnFaceByValue() {
 		var tmps = _graphics.Scale;
 		tmps.X = _faceDirection == FaceDirection.Left ? 1 : -1;
 		_graphics.Scale = tmps;
@@ -45,6 +45,8 @@ public partial class Enemy : CharacterBody2D {
 		_animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
 		_hurtBox = _graphics.GetNode<HurtBox>("HurtBox");
 		_hurtBox.Hurt += OnHurt;
+
+		_TurnFaceByValue();
 	}
 
 	protected virtual void OnHurt(HitBox from) {

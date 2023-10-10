@@ -846,9 +846,10 @@ layer_1/z_index = 0
 layer_1/tile_data = PackedInt32Array(-393303, 589824, 2, -393275, 458752, 3, 262129, 524288, 2, -393279, 655360, 2)
 
 [node name="Player" parent="." instance=ExtResource("2_81ydp")]
-position = Vector2(-1453, 1394)
+position = Vector2(-1374, 1330)
 
 [node name="Boar" parent="." instance=ExtResource("9_ct6lx")]
+visible = false
 position = Vector2(-1584, 1403)
 _cooldown = 5000
 
@@ -858,7 +859,9 @@ position = Vector2(-1921, 1341)
 next = "Second"
 
 [node name="Boar2" parent="." instance=ExtResource("9_ct6lx")]
+visible = false
 position = Vector2(-1723, 1404)
 
 [node name="Boar3" parent="." instance=ExtResource("9_ct6lx")]
 position = Vector2(-1184, 1404)
+_faceDirection = 1

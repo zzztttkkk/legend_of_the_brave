@@ -128,7 +128,6 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 	public int CurrentDamage => Damage;
 
-
 	private void _InitCamera() {
 		var tileMap = GetTree().Root.GetNodeOrNull<TileMap>("Root/TileMap");
 		if (tileMap == null) return;
@@ -410,37 +409,37 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 		switch (current) {
 			case PlayerState.Idle: {
-				move(ref tmpv, delta);
+				_NormalMove(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.Running: {
-				move(ref tmpv, delta);
+				_NormalMove(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.Jump: {
-				move(ref tmpv, delta);
+				_NormalMove(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.Falling: {
-				move(ref tmpv, delta);
+				_NormalMove(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.Landing: {
-				move(ref tmpv, delta);
+				_NormalMove(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.WallSliding: {
-				wallSlide(ref tmpv, delta);
+				_WallSlideMove(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.WallJump: {
-				wallJump(ref tmpv, delta);
+				_WallJumpMove(ref tmpv, delta);
 				break;
 			}
 			case PlayerState.AttackTypeOne:
 			case PlayerState.AttackTypeTwo:
 			case PlayerState.AttackTypeThree: {
-				move(ref tmpv, delta);
+				_NormalMove(ref tmpv, delta);
 				break;
 			}
 			default: {
@@ -452,7 +451,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		MoveAndSlide();
 	}
 
-	private void move(ref Vector2 tmpv, double delta) {
+	private void _NormalMove(ref Vector2 tmpv, double delta) {
 		var direction = _tmp.Direction;
 		tmpv.Y += (float)(Globals.Gravity * delta);
 		tmpv.X = direction * RunSpeed;
@@ -470,7 +469,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		_graphics.Scale = tmps;
 	}
 
-	private void wallSlide(ref Vector2 tmpv, double delta) {
+	private void _WallSlideMove(ref Vector2 tmpv, double delta) {
 		var direction = _tmp.Direction;
 		tmpv.X = direction * RunSpeed;
 		tmpv.Y = SlideSpeed;
@@ -481,7 +480,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		_graphics.Scale = tmps;
 	}
 
-	private void wallJump(ref Vector2 tmpv, double delta) {
+	private void _WallJumpMove(ref Vector2 tmpv, double delta) {
 		var tmps = _graphics.Scale;
 
 		if (_stateMachine.Duration < 80) {
