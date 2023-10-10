@@ -2,10 +2,10 @@
 
 [ext_resource type="Script" path="res://scripts/Root.cs" id="1_l8y87"]
 [ext_resource type="Texture2D" uid="uid://vml7sqvsbhik" path="res://dist/imgs/items/Assets/Tree-Assets.png" id="2_gc36l"]
-[ext_resource type="PackedScene" uid="uid://cpgnd7f52n41m" path="res://player.tscn" id="3_cxk72"]
+[ext_resource type="PackedScene" uid="uid://cpgnd7f52n41m" path="res://items/player.tscn" id="3_cxk72"]
 [ext_resource type="Texture2D" uid="uid://b55iah53fdt4s" path="res://dist/imgs/items/Background/Background.png" id="4_b7ayw"]
 [ext_resource type="Texture2D" uid="uid://eeasdurxtsw2" path="res://dist/imgs/items/Trees/Background.png" id="5_t5331"]
-[ext_resource type="PackedScene" uid="uid://dhv5i2khficpo" path="res://uis.tscn" id="6_ri7g6"]
+[ext_resource type="PackedScene" uid="uid://bgryp077b4pyc" path="res://items/uis.tscn" id="5_tddar"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_pxhwb"]
 texture = ExtResource("2_gc36l")
@@ -827,7 +827,7 @@ centered = false
 region_enabled = true
 region_rect = Rect2(208, 288, 128, 96)
 
-[node name="uis" parent="." instance=ExtResource("6_ri7g6")]
+[node name="uis" parent="." instance=ExtResource("5_tddar")]
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = SubResource("TileSet_0nrdg")

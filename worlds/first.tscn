@@ -4,8 +4,8 @@
 [ext_resource type="Script" path="res://scripts/Root.cs" id="1_q7nbs"]
 [ext_resource type="PackedScene" uid="uid://cpgnd7f52n41m" path="res://items/player.tscn" id="2_81ydp"]
 [ext_resource type="Texture2D" uid="uid://b55iah53fdt4s" path="res://dist/imgs/items/Background/Background.png" id="5_drqog"]
+[ext_resource type="PackedScene" uid="uid://bgryp077b4pyc" path="res://items/uis.tscn" id="5_mv1ot"]
 [ext_resource type="Texture2D" uid="uid://eeasdurxtsw2" path="res://dist/imgs/items/Trees/Background.png" id="6_i60fu"]
-[ext_resource type="PackedScene" uid="uid://dhv5i2khficpo" path="res://uis.tscn" id="6_p7gae"]
 [ext_resource type="PackedScene" uid="uid://cwh4rukp4iadg" path="res://items/door.tscn" id="8_whf8i"]
 [ext_resource type="PackedScene" uid="uid://bg7g0vaxk7jih" path="res://items/boar.tscn" id="9_ct6lx"]
 
@@ -830,7 +830,7 @@ centered = false
 region_enabled = true
 region_rect = Rect2(208, 288, 128, 96)
 
-[node name="uis" parent="." instance=ExtResource("6_p7gae")]
+[node name="uis" parent="." instance=ExtResource("5_mv1ot")]
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = SubResource("TileSet_0nrdg")
@@ -849,7 +849,6 @@ layer_1/tile_data = PackedInt32Array(-393303, 589824, 2, -393275, 458752, 3, 262
 position = Vector2(-1374, 1330)
 
 [node name="Boar" parent="." instance=ExtResource("9_ct6lx")]
-visible = false
 position = Vector2(-1584, 1403)
 _cooldown = 5000
 
@@ -859,7 +858,6 @@ position = Vector2(-1921, 1341)
 next = "Second"
 
 [node name="Boar2" parent="." instance=ExtResource("9_ct6lx")]
-visible = false
 position = Vector2(-1723, 1404)
 
 [node name="Boar3" parent="." instance=ExtResource("9_ct6lx")]
