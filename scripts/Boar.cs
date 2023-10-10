@@ -27,12 +27,14 @@ class BoarTmp : BaseTmp {
 
 	public bool SeePlayer {
 		get {
-			_seePlayer ??= _playerFaceChecker.IsColliding() &&
-			               _playerFaceChecker.GetCollider().GetType() == typeof(Player);
+			_seePlayer ??= (
+				_playerFaceChecker.IsColliding()
+				&&
+				_playerFaceChecker.GetCollider().GetType() == typeof(Player)
+			);
 			return _seePlayer.Value;
 		}
 	}
-
 
 	private bool? _reachWall;
 
