@@ -1,11 +1,12 @@
-[gd_scene load_steps=10 format=3 uid="uid://d1eue7yt6sak2"]
+[gd_scene load_steps=11 format=3 uid="uid://bmqfpmjah78hx"]
 
 [ext_resource type="Texture2D" uid="uid://vml7sqvsbhik" path="res://dist/imgs/items/Assets/Tree-Assets.png" id="1_7vvbh"]
 [ext_resource type="Script" path="res://scripts/Root.cs" id="1_q7nbs"]
 [ext_resource type="PackedScene" uid="uid://cpgnd7f52n41m" path="res://player.tscn" id="2_81ydp"]
 [ext_resource type="Texture2D" uid="uid://b55iah53fdt4s" path="res://dist/imgs/items/Background/Background.png" id="5_drqog"]
 [ext_resource type="Texture2D" uid="uid://eeasdurxtsw2" path="res://dist/imgs/items/Trees/Background.png" id="6_i60fu"]
-[ext_resource type="PackedScene" path="res://uis.tscn" id="6_p7gae"]
+[ext_resource type="PackedScene" uid="uid://bgryp077b4pyc" path="res://uis.tscn" id="6_p7gae"]
+[ext_resource type="PackedScene" uid="uid://cwh4rukp4iadg" path="res://door.tscn" id="8_whf8i"]
 [ext_resource type="PackedScene" uid="uid://bg7g0vaxk7jih" path="res://boar.tscn" id="9_ct6lx"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_pxhwb"]
@@ -850,3 +851,8 @@ position = Vector2(-1453, 1394)
 [node name="Boar" parent="." instance=ExtResource("9_ct6lx")]
 position = Vector2(-1584, 1403)
 _cooldown = 5000
+
+[node name="Door" parent="." instance=ExtResource("8_whf8i")]
+z_index = -1
+position = Vector2(-1921, 1341)
+next = "Second"

@@ -1,0 +1,53 @@
+[gd_scene load_steps=6 format=3 uid="uid://cwh4rukp4iadg"]
+
+[ext_resource type="Script" path="res://scripts/Door.cs" id="1_edbko"]
+[ext_resource type="Texture2D" uid="uid://d3aamcwbds2f6" path="res://dist/imgs/items/Assets/Buildings.png" id="1_tv00u"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_iu7vi"]
+texture = ExtResource("1_tv00u")
+18:16/0 = 0
+19:16/0 = 0
+20:16/0 = 0
+21:16/0 = 0
+22:16/0 = 0
+23:16/0 = 0
+22:17/0 = 0
+22:18/0 = 0
+22:19/0 = 0
+22:20/0 = 0
+19:20/0 = 0
+19:19/0 = 0
+19:18/0 = 0
+19:17/0 = 0
+20:17/0 = 0
+21:17/0 = 0
+20:18/0 = 0
+20:19/0 = 0
+20:20/0 = 0
+21:20/0 = 0
+21:19/0 = 0
+21:18/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_4cu2p"]
+sources/1 = SubResource("TileSetAtlasSource_iu7vi")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_i6igk"]
+size = Vector2(34, 46)
+
+[node name="Door" type="Node2D"]
+script = ExtResource("1_edbko")
+
+[node name="TileMap" type="TileMap" parent="."]
+tile_set = SubResource("TileSet_4cu2p")
+format = 2
+layer_0/tile_data = PackedInt32Array(0, 1179649, 16, 1, 1245185, 16, 2, 1310721, 16, 3, 1376257, 16, 4, 1441793, 16, 5, 1507329, 16, 65537, 1245185, 17, 65538, 1310721, 17, 65539, 1376257, 17, 65540, 1441793, 17, 131073, 1245185, 18, 131074, 1310721, 18, 196609, 1245185, 19, 262145, 1245185, 20, 196610, 1310721, 19, 262146, 1310721, 20, 131075, 1376257, 18, 196611, 1376257, 19, 262147, 1376257, 20, 131076, 1441793, 18, 196612, 1441793, 19, 262148, 1441793, 20)
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(49, 53)
+shape = SubResource("RectangleShape2D_i6igk")
+
+[connection signal="body_entered" from="Area2D" to="." method="OnArea2DBodyEntered"]
