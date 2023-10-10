@@ -19,10 +19,14 @@ public partial class Main : Node2D {
 		_CustomWindows();
 	}
 
-	private void OnStart() {
+	private void OnStartBtnPressed() {
 		var err = GetTree().ChangeSceneToPacked(Globals.Scenes.First);
 		if (err != Error.Ok) {
 			throw new Exception(err.ToString());
 		}
+	}
+
+	private void OnQuitBtnPressed() {
+		GetTree().Quit();
 	}
 }
