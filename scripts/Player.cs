@@ -197,7 +197,6 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 			}
 		}
 
-
 		switch (current) {
 			case PlayerState.Idle: {
 				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
@@ -302,6 +301,10 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				break;
 			}
 			case PlayerState.AttackTypeOne: {
+				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
+					return PlayerState.Jump;
+				}
+				
 				if (!_tmp.ZeroDirection) {
 					return PlayerState.Running;
 				}
@@ -313,6 +316,10 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				break;
 			}
 			case PlayerState.AttackTypeTwo: {
+				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
+					return PlayerState.Jump;
+				}
+				
 				if (!_tmp.ZeroDirection) {
 					return PlayerState.Running;
 				}
@@ -324,6 +331,10 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				break;
 			}
 			case PlayerState.AttackTypeThree: {
+				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
+					return PlayerState.Jump;
+				}
+				
 				if (!_tmp.ZeroDirection) {
 					return PlayerState.Running;
 				}

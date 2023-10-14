@@ -8,11 +8,11 @@ public partial class Root : Node2D {
 		_ui = GetNodeOrNull<CanvasLayer>("uis/ui");
 	}
 
-	public override void _UnhandledInput(InputEvent @event) {
-		if (@event.IsActionReleased("paused")) {
+	public override void _UnhandledInput(InputEvent evt) {
+		if (evt.IsActionReleased("paused")) {
 			if (_ui == null) return;
 
-			if (@event.GetMeta(Globals.PausedEventHandledMetaKey, @default: false).AsBool()) {
+			if (evt.GetMeta(Globals.PausedEventHandledMetaKey, @default: false).AsBool()) {
 				return;
 			}
 
