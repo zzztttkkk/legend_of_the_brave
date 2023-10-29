@@ -1,5 +1,7 @@
 using Godot;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using LegendOfTheBrave.scripts;
 using LegendOfTheBrave.scripts.classes;
 
@@ -8,6 +10,7 @@ public enum BoarState {
 	Walk,
 	Run,
 	OnHit,
+	Die,
 }
 
 class BoarTmp : BaseTmp {
@@ -67,10 +70,12 @@ class BoarTmp : BaseTmp {
 class DamageEvent {
 	public readonly int Damage;
 	public bool Processed;
+	public readonly Node2D Source;
 
-	public DamageEvent(int f) {
+	public DamageEvent(Node2D source, int f) {
 		Damage = f;
 		Processed = false;
+		Source = source;
 	}
 }
 
@@ -82,11 +87,13 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 	private BoarTmp _tmp;
 
 	private ulong _losePlayerAt;
-	private DamageEvent _damageEvent;
+	private LinkedList<DamageEvent> _damages;
 
 	public override void _Ready() {
 		base._Ready();
 
+		_hp = 200;
+		_damages = new LinkedList<DamageEvent>();
 		_stateMachine = new StateMachine<BoarState>(this, true);
 		_tmp = new BoarTmp(
 			_graphics.GetNode<RayCast2D>("WallChecker"),
@@ -104,19 +111,32 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 	}
 
 	protected override void OnHurt(HitBox from) {
-		if (_damageEvent != null) return;
-
 		if (from.Owner.GetType() == typeof(Player)) {
 			var player = (Player)from.Owner;
 			if (player.CurrentDamage < 1) return;
-			_damageEvent = new DamageEvent(player.CurrentDamage);
+			_damages.AddLast(new DamageEvent(player, player.CurrentDamage));
 		}
 	}
 
 	public BoarState GetNextState(BoarState current) {
-		if (_damageEvent is { Processed: false }) {
-			_damageEvent.Processed = true;
-			return BoarState.OnHit;
+		if (_hp <= 0) {
+			if (current == BoarState.Die && _stateMachine.FrameCount > 0 && !_animationPlayer.IsPlaying()) {
+				GD.Print("XXXXXXXXXXXXX");
+				QueueFree();
+				return BoarState.Die;
+			}
+
+			return BoarState.Die;
+		}
+
+		if (_damages.First != null) {
+			if (_damages.Any(evt => {
+				    var np = !evt.Processed;
+				    evt.Processed = true;
+				    return np;
+			    })) {
+				return BoarState.OnHit;
+			}
 		}
 
 		if (current != BoarState.OnHit && _tmp.SeePlayer) {
@@ -164,7 +184,7 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 			}
 			case BoarState.OnHit: {
 				if (_stateMachine.FrameCount > 0 && !_animationPlayer.IsPlaying()) {
-					_damageEvent = null;
+					_damages.Clear();
 					_losePlayerAt = 0;
 					return BoarState.Run;
 				}
@@ -195,7 +215,15 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 			}
 			case BoarState.OnHit: {
 				_animationPlayer.Play("on_hit");
-				_hp -= _damageEvent.Damage;
+
+				foreach (var evt in _damages) {
+					_hp -= evt.Damage;
+				}
+
+				break;
+			}
+			case BoarState.Die: {
+				_animationPlayer.Play("die");
 				break;
 			}
 			default: {
@@ -221,7 +249,11 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 				break;
 			}
 			case BoarState.OnHit: {
-				onHit(ref tmpv, delta, _walkSpeed);
+				onHit(ref tmpv, delta, _speed * (float)1.2);
+				break;
+			}
+			case BoarState.Die: {
+				tmpv.X = 0;
 				break;
 			}
 			default: {
@@ -238,8 +270,16 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 		tmpv.Y += (float)(Globals.Gravity * delta);
 	}
 
-	private void onHit(ref Vector2 tmpv, double delta, int speed) {
-		tmpv.X = speed * (int)_faceDirection * -1;
+	private void onHit(ref Vector2 tmpv, double delta, float speed) {
+		if (_damages.First == null) return;
+
+		var xDir = _damages.First.ValueRef.Source.GlobalPosition.DirectionTo(this.GlobalPosition).X;
+		if ((xDir > 0 && _faceDirection != FaceDirection.Left) ||
+		    (xDir < 0 && _faceDirection != FaceDirection.Right)) {
+			TurnFace();
+		}
+
+		tmpv.X = speed * xDir;
 		tmpv.Y += (float)(Globals.Gravity * delta);
 	}
 }
