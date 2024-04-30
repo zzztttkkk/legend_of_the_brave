@@ -17,7 +17,7 @@ public class StateMachine<T> where T : Enum {
 	private ulong _frameCount;
 	private ulong _duration;
 
-	public T current {
+	public T Current {
 		get => _current;
 
 		private set {
@@ -56,7 +56,7 @@ public class StateMachine<T> where T : Enum {
 				GD.Print($"[{name}] [{Engine.GetPhysicsFrames()}] {_current} => {next}");
 			}
 
-			current = next;
+			Current = next;
 		}
 
 		_owner.TickPhysics(_current, delta);

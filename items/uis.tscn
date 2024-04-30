@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://bgryp077b4pyc"]
 
-[ext_resource type="Script" path="res://scripts/FPSCounter.cs" id="1_wdjpe"]
+[ext_resource type="Script" path="res://scripts/FpsCounter.cs" id="1_eo4wm"]
 [ext_resource type="Script" path="res://scripts/UI.cs" id="2_mfnut"]
 
 [node name="uis" type="Node2D"]
@@ -8,11 +8,10 @@
 [node name="hud" type="CanvasLayer" parent="."]
 layer = 3
 
-[node name="FPSCounter" type="Label" parent="hud"]
+[node name="FpsCounter" type="Label" parent="hud"]
 offset_right = 40.0
 offset_bottom = 23.0
-theme_override_font_sizes/font_size = 8
-script = ExtResource("1_wdjpe")
+script = ExtResource("1_eo4wm")
 
 [node name="ui" type="CanvasLayer" parent="."]
 process_mode = 2

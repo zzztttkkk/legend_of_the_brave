@@ -19,13 +19,13 @@ public enum PlayerState {
 
 class TicksTmp : BaseTmp {
 	private readonly Player _player;
-	private readonly RayCast2D _handChecker;
-	private readonly RayCast2D _footChecker;
+	private readonly RayCast2D _headFrontChecker;
+	private readonly RayCast2D _footFrontChecker;
 
 	public TicksTmp(Player obj, RayCast2D hc, RayCast2D fc) {
 		_player = obj;
-		_handChecker = hc;
-		_footChecker = fc;
+		_headFrontChecker = hc;
+		_footFrontChecker = fc;
 	}
 
 	private bool? _isOnFloor;
@@ -86,7 +86,7 @@ class TicksTmp : BaseTmp {
 
 	public bool CanSlidingWall {
 		get {
-			_canSlidingWall ??= IsOnWall && _footChecker.IsColliding() && _handChecker.IsColliding();
+			_canSlidingWall ??= IsOnWall && _footFrontChecker.IsColliding() && _headFrontChecker.IsColliding();
 			return _canSlidingWall.Value;
 		}
 	}
@@ -109,7 +109,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	[Export] private int RunSpeed = 180;
 	[Export] private int JumpInitYSpeed = -370;
 	[Export] private int SlideSpeed = 70;
-	[Export] private int MaxFallingSpeed = 600;
+	private int MaxFallingSpeed = 600;
 	[Export] private Vector2 WallJumpInitVelocity = new(200, -370);
 	[Export] private bool CanCombo;
 	[Export] private int Damage;
@@ -132,15 +132,15 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		var tileMap = GetTree().Root.GetNodeOrNull<TileMap>("Root/TileMap");
 		if (tileMap == null) return;
 
-		var _camera2D = GetNode<Camera2D>("Camera2D");
+		var camera2D = GetNode<Camera2D>("Camera2D");
 
 		var rect = tileMap.GetUsedRect().Grow(-1);
 		var size = tileMap.TileSet.TileSize;
 
-		_camera2D.LimitTop = rect.Position.Y * size.Y;
-		_camera2D.LimitBottom = rect.End.Y * size.Y;
-		_camera2D.LimitLeft = rect.Position.X * size.X;
-		_camera2D.LimitRight = rect.End.X * size.Y;
+		camera2D.LimitTop = rect.Position.Y * size.Y;
+		camera2D.LimitBottom = rect.End.Y * size.Y;
+		camera2D.LimitLeft = rect.Position.X * size.X;
+		camera2D.LimitRight = rect.End.X * size.Y;
 	}
 
 	public override void _Ready() {
@@ -153,8 +153,8 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 
 		_tmp = new TicksTmp(
 			this,
-			_graphics.GetNode<RayCast2D>("HandChecker"),
-			_graphics.GetNode<RayCast2D>("FootChecker")
+			_graphics.GetNode<RayCast2D>("HeadFrontChecker"),
+			_graphics.GetNode<RayCast2D>("FootFrontChecker")
 		);
 		_stateMachine = new StateMachine<PlayerState>(this, true);
 
@@ -162,7 +162,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	}
 
 	public override void _UnhandledInput(InputEvent @event) {
-		if (_stateMachine.current == PlayerState.Jump && @event.IsActionReleased("jump")) {
+		if (_stateMachine.Current == PlayerState.Jump && @event.IsActionReleased("jump")) {
 			var tmpv = Velocity;
 			tmpv.Y = 0;
 			Velocity = tmpv;
@@ -304,7 +304,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
 					return PlayerState.Jump;
 				}
-				
+
 				if (!_tmp.ZeroDirection) {
 					return PlayerState.Running;
 				}
@@ -319,7 +319,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
 					return PlayerState.Jump;
 				}
-				
+
 				if (!_tmp.ZeroDirection) {
 					return PlayerState.Running;
 				}
@@ -334,7 +334,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 				if ((_tmp.IsOnFloor && _tmp.JumpPressed) || Velocity.Y < 0) {
 					return PlayerState.Jump;
 				}
-				
+
 				if (!_tmp.ZeroDirection) {
 					return PlayerState.Running;
 				}

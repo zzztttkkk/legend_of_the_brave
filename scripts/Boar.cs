@@ -92,14 +92,14 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 	public override void _Ready() {
 		base._Ready();
 
-		_hp = 200;
+		HpValue = 200;
 		_damages = new LinkedList<DamageEvent>();
 		_stateMachine = new StateMachine<BoarState>(this, true);
 		_tmp = new BoarTmp(
-			_graphics.GetNode<RayCast2D>("WallChecker"),
-			_graphics.GetNode<RayCast2D>("FloorChecker1"),
-			_graphics.GetNode<RayCast2D>("FloorChecker2"),
-			_graphics.GetNode<RayCast2D>("PlayerChecker")
+			Graphics.GetNode<RayCast2D>("WallChecker"),
+			Graphics.GetNode<RayCast2D>("FloorChecker1"),
+			Graphics.GetNode<RayCast2D>("FloorChecker2"),
+			Graphics.GetNode<RayCast2D>("PlayerChecker")
 		);
 
 		OnStateChange(BoarState.Idle, BoarState.Idle);
@@ -119,8 +119,8 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 	}
 
 	public BoarState GetNextState(BoarState current) {
-		if (_hp <= 0) {
-			if (current == BoarState.Die && _stateMachine.FrameCount > 0 && !_animationPlayer.IsPlaying()) {
+		if (HpValue <= 0) {
+			if (current == BoarState.Die && _stateMachine.FrameCount > 0 && !AnimationPlayer.IsPlaying()) {
 				GD.Print("XXXXXXXXXXXXX");
 				QueueFree();
 				return BoarState.Die;
@@ -183,7 +183,7 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 				break;
 			}
 			case BoarState.OnHit: {
-				if (_stateMachine.FrameCount > 0 && !_animationPlayer.IsPlaying()) {
+				if (_stateMachine.FrameCount > 0 && !AnimationPlayer.IsPlaying()) {
 					_damages.Clear();
 					_losePlayerAt = 0;
 					return BoarState.Run;
@@ -202,28 +202,28 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 	public void OnStateChange(BoarState from, BoarState to) {
 		switch (to) {
 			case BoarState.Idle: {
-				_animationPlayer.Play("idle");
+				AnimationPlayer.Play("idle");
 				break;
 			}
 			case BoarState.Walk: {
-				_animationPlayer.Play("walk");
+				AnimationPlayer.Play("walk");
 				break;
 			}
 			case BoarState.Run: {
-				_animationPlayer.Play("run");
+				AnimationPlayer.Play("run");
 				break;
 			}
 			case BoarState.OnHit: {
-				_animationPlayer.Play("on_hit");
+				AnimationPlayer.Play("on_hit");
 
 				foreach (var evt in _damages) {
-					_hp -= evt.Damage;
+					HpValue -= evt.Damage;
 				}
 
 				break;
 			}
 			case BoarState.Die: {
-				_animationPlayer.Play("die");
+				AnimationPlayer.Play("die");
 				break;
 			}
 			default: {
@@ -245,11 +245,11 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 				break;
 			}
 			case BoarState.Run: {
-				move(ref tmpv, delta, _speed);
+				move(ref tmpv, delta, SpeedValue);
 				break;
 			}
 			case BoarState.OnHit: {
-				onHit(ref tmpv, delta, _speed * (float)1.2);
+				onHit(ref tmpv, delta, SpeedValue * (float)1.2);
 				break;
 			}
 			case BoarState.Die: {
@@ -266,7 +266,7 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 	}
 
 	private void move(ref Vector2 tmpv, double delta, int speed) {
-		tmpv.X = speed * (int)_faceDirection;
+		tmpv.X = speed * (int)FaceDirectionValue;
 		tmpv.Y += (float)(Globals.Gravity * delta);
 	}
 
@@ -274,8 +274,8 @@ public partial class Boar : Enemy, IStateMachineOwner<BoarState> {
 		if (_damages.First == null) return;
 
 		var xDir = _damages.First.ValueRef.Source.GlobalPosition.DirectionTo(this.GlobalPosition).X;
-		if ((xDir > 0 && _faceDirection != FaceDirection.Left) ||
-		    (xDir < 0 && _faceDirection != FaceDirection.Right)) {
+		if ((xDir > 0 && FaceDirectionValue != FaceDirection.Left) ||
+		    (xDir < 0 && FaceDirectionValue != FaceDirection.Right)) {
 			TurnFace();
 		}
 

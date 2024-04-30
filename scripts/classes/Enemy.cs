@@ -7,21 +7,21 @@ public enum FaceDirection {
 }
 
 public partial class Enemy : CharacterBody2D {
-	[Export] protected FaceDirection _faceDirection = FaceDirection.Left;
-	[Export] protected int _speed = 200;
-	[Export] protected int _hp = 1000;
+	[Export] protected FaceDirection FaceDirectionValue = FaceDirection.Left;
+	[Export] protected int SpeedValue = 200;
+	[Export] protected int HpValue = 1000;
 
-	protected Node2D _graphics;
-	protected AnimationPlayer _animationPlayer;
-	protected HurtBox _hurtBox;
+	protected Node2D Graphics;
+	protected AnimationPlayer AnimationPlayer;
+	protected HurtBox HurtBox;
 
 	public FaceDirection FaceDirection {
-		get => _faceDirection;
+		get => FaceDirectionValue;
 
 		set {
-			_faceDirection = value;
+			FaceDirectionValue = value;
 
-			if (_graphics == null) {
+			if (Graphics == null) {
 				Ready += _TurnFaceByValue;
 			}
 			else {
@@ -31,24 +31,23 @@ public partial class Enemy : CharacterBody2D {
 	}
 
 	private void _TurnFaceByValue() {
-		var tmps = _graphics.Scale;
-		tmps.X = _faceDirection == FaceDirection.Left ? 1 : -1;
-		_graphics.Scale = tmps;
+		var tmps = Graphics.Scale;
+		tmps.X = FaceDirectionValue == FaceDirection.Left ? 1 : -1;
+		Graphics.Scale = tmps;
 	}
 
 	protected void TurnFace() {
-		FaceDirection = _faceDirection == FaceDirection.Left ? FaceDirection.Right : FaceDirection.Left;
+		FaceDirection = FaceDirectionValue == FaceDirection.Left ? FaceDirection.Right : FaceDirection.Left;
 	}
 
 	public override void _Ready() {
-		_graphics = GetNode<Node2D>("Graphics");
-		_animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
-		_hurtBox = _graphics.GetNode<HurtBox>("HurtBox");
-		_hurtBox.Hurt += OnHurt;
+		Graphics = GetNode<Node2D>("Graphics");
+		AnimationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
+		HurtBox = Graphics.GetNode<HurtBox>("HurtBox");
+		HurtBox.Hurt += OnHurt;
 
 		_TurnFaceByValue();
 	}
 
-	protected virtual void OnHurt(HitBox from) {
-	}
+	protected virtual void OnHurt(HitBox from) { }
 }

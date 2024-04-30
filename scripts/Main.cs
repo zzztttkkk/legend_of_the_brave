@@ -72,16 +72,16 @@ public partial class Main : Node2D {
 			return;
 		}
 
-		var is_accept = @event.IsActionPressed("ui_accept");
-		if (!is_accept) {
+		var isAccept = @event.IsActionPressed("ui_accept");
+		if (!isAccept) {
 			if (@event.GetType() == typeof(InputEventJoypadButton)) {
 				var evt = (InputEventJoypadButton)@event;
-				is_accept = evt.ButtonIndex == JoyButton.A;
+				isAccept = evt.ButtonIndex == JoyButton.A;
 			}
 		}
 
 
-		if (!is_accept) return;
+		if (!isAccept) return;
 		if (_currentControl == null) return;
 		if (_currentControl.GetType() != typeof(Button)) return;
 

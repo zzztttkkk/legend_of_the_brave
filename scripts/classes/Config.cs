@@ -6,26 +6,26 @@ using IniParser.Model;
 namespace LegendOfTheBrave.scripts.classes;
 
 public class Config {
-	private IniData _CfgIniData;
+	private IniData _cfgIniData;
 
 	public Config() {
-		load();
+		Load();
 	}
 
-	private void load() {
+	private void Load() {
 		var cwd = Directory.GetCurrentDirectory();
 		if (File.Exists($"{cwd}/config.ini")) {
-			_CfgIniData = new FileIniDataParser().ReadFile($"{cwd}/config.ini");
+			_cfgIniData = new FileIniDataParser().ReadFile($"{cwd}/config.ini");
 		}
 
-		_CfgIniData ??= new IniData();
+		_cfgIniData ??= new IniData();
 		if (File.Exists($"{cwd}/config.local.ini")) {
-			_CfgIniData.Merge(new FileIniDataParser().ReadFile($"{cwd}/config.local.ini"));
+			_cfgIniData.Merge(new FileIniDataParser().ReadFile($"{cwd}/config.local.ini"));
 		}
 	}
 
 	public string GetString(string path) {
-		return _CfgIniData.TryGetKey(path, out var val) ? val : "";
+		return _cfgIniData.TryGetKey(path, out var val) ? val : "";
 	}
 
 	public int? GetInt(string path) {

@@ -8,17 +8,17 @@ public class Scenes {
 	public readonly PackedScene First = ResourceLoader.Load<PackedScene>("res://worlds/first.tscn");
 	public readonly PackedScene Second = ResourceLoader.Load<PackedScene>("res://worlds/second.tscn");
 
-	private readonly Dictionary<string, PackedScene> names;
+	private readonly Dictionary<string, PackedScene> _names;
 
 	public Scenes() {
-		names = new() {
+		_names = new() {
 			["First"] = First,
 			["Second"] = Second
 		};
 	}
 
 	public PackedScene GetByName(string name) {
-		return names.TryGetValue(name, out var value) ? value : null;
+		return _names.GetValueOrDefault(name);
 	}
 }
 
