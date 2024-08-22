@@ -37,10 +37,8 @@ size = Vector2(34, 46)
 [node name="Door" type="Node2D"]
 script = ExtResource("1_edbko")
 
-[node name="TileMap" type="TileMap" parent="."]
+[node name="TileMap" type="TileMapLayer" parent="."]
 tile_set = SubResource("TileSet_4cu2p")
-format = 2
-layer_0/tile_data = PackedInt32Array(0, 1179649, 16, 1, 1245185, 16, 2, 1310721, 16, 3, 1376257, 16, 4, 1441793, 16, 5, 1507329, 16, 65537, 1245185, 17, 65538, 1310721, 17, 65539, 1376257, 17, 65540, 1441793, 17, 131073, 1245185, 18, 131074, 1310721, 18, 196609, 1245185, 19, 262145, 1245185, 20, 196610, 1310721, 19, 262146, 1310721, 20, 131075, 1376257, 18, 196611, 1376257, 19, 262147, 1376257, 20, 131076, 1441793, 18, 196612, 1441793, 19, 262148, 1441793, 20)
 
 [node name="Area2D" type="Area2D" parent="."]
 collision_layer = 0

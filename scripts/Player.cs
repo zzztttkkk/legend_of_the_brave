@@ -129,7 +129,7 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 	public int CurrentDamage => Damage;
 
 	private void _InitCamera() {
-		var tileMap = GetTree().Root.GetNodeOrNull<TileMap>("Root/TileMap");
+		var tileMap = GetTree().Root.GetNodeOrNull<TileMapLayer>("Root/TileMap");
 		if (tileMap == null) return;
 
 		var camera2D = GetNode<Camera2D>("Camera2D");
