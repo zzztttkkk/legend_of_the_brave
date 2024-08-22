@@ -132,15 +132,15 @@ public partial class Player : CharacterBody2D, IStateMachineOwner<PlayerState> {
 		var tileMap = GetTree().Root.GetNodeOrNull<TileMapLayer>("Root/TileMap");
 		if (tileMap == null) return;
 
-		var camera2D = GetNode<Camera2D>("Camera2D");
-
-		var rect = tileMap.GetUsedRect().Grow(-1);
-		var size = tileMap.TileSet.TileSize;
-
-		camera2D.LimitTop = rect.Position.Y * size.Y;
-		camera2D.LimitBottom = rect.End.Y * size.Y;
-		camera2D.LimitLeft = rect.Position.X * size.X;
-		camera2D.LimitRight = rect.End.X * size.Y;
+		// var camera2D = GetNode<Camera2D>("Camera2D");
+		//
+		// var rect = tileMap.GetUsedRect().Grow(-1);
+		// var size = tileMap.TileSet.TileSize;
+		//
+		// camera2D.LimitTop = rect.Position.Y * size.Y;
+		// camera2D.LimitBottom = rect.End.Y * size.Y;
+		// camera2D.LimitLeft = rect.Position.X * size.X;
+		// camera2D.LimitRight = rect.End.X * size.Y;
 	}
 
 	public override void _Ready() {

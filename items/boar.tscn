@@ -725,7 +725,7 @@ position = Vector2(-14, 15)
 target_position = Vector2(0, 5)
 
 [node name="FloorChecker2" type="RayCast2D" parent="Graphics" index="4"]
-position = Vector2(-16, 15)
+position = Vector2(-22, 15)
 target_position = Vector2(0, 5)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Graphics/HitBox" index="0"]

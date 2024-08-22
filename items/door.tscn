@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://cwh4rukp4iadg"]
+[gd_scene load_steps=6 format=4 uid="uid://cwh4rukp4iadg"]
 
 [ext_resource type="Script" path="res://scripts/Door.cs" id="1_edbko"]
 [ext_resource type="Texture2D" uid="uid://d3aamcwbds2f6" path="res://dist/imgs/items/Assets/Buildings.png" id="1_tv00u"]
@@ -38,6 +38,7 @@ size = Vector2(34, 46)
 script = ExtResource("1_edbko")
 
 [node name="TileMap" type="TileMapLayer" parent="."]
+tile_map_data = PackedByteArray("AAAAAAAAAQASABAAAAABAAAAAQATABAAAAACAAAAAQAUABAAAAADAAAAAQAVABAAAAAEAAAAAQAWABAAAAAFAAAAAQAXABAAAAABAAEAAQATABEAAAABAAIAAQATABIAAAABAAMAAQATABMAAAABAAQAAQATABQAAAACAAQAAQAUABQAAAADAAQAAQAVABQAAAAEAAEAAQAWABEAAAAEAAIAAQAWABIAAAAEAAMAAQAWABMAAAAEAAQAAQAWABQAAAACAAEAAQAUABEAAAACAAIAAQAUABIAAAACAAMAAQAUABMAAAADAAEAAQAVABEAAAADAAIAAQAVABIAAAADAAMAAQAVABMAAAA=")
 tile_set = SubResource("TileSet_4cu2p")
 
 [node name="Area2D" type="Area2D" parent="."]
